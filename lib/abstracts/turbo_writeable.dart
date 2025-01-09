@@ -56,7 +56,7 @@ abstract class TurboWriteable {
   ///   return null;
   /// }
   /// ```
-  TurboResponse<T>? validate<T>();
+  TurboResponse<T>? validate<T>() => null;
 
   /// Converts the object to a Firestore-compatible map.
   ///

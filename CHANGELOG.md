@@ -1,3 +1,11 @@
+## 0.1.1
+
+* **🐛 Fix:** Remove default stream implementation in `TurboCollectionService` to enforce inheritance.
+
+## 0.1.0+1
+
+* **🐛 Fix:** Made `TurboResponse<T>? validate<T>()` null by default to avoid forced inheritance. 
+
 ## 0.1.0
 
 * **✨ New:** Initial release of turbo_firestore_api

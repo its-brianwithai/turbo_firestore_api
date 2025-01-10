@@ -352,10 +352,10 @@ packages:
     dependency: "direct main"
     description:
       name: turbo_response
-      sha256: "242a47cf871ee9aa6979681ba414951f028c71ade19d283933d82a0d96baf122"
+      sha256: b76c4f1cd138a76ff9cd0a32b70d56ae0f4e3b6d469742b395157e43238f56a6
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.4"
+    version: "0.2.6"
   typed_data:
     dependency: transitive
     description:

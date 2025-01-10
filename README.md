@@ -644,7 +644,7 @@ class UsersService extends TurboCollectionService<User, UsersApi> {
     return api.runTransaction((transaction) async {
       // Example of throwing inside transaction based on a condition
       if (fromUser.points < points) {
-        TurboResponse.throwFail(
+        TurboResponse.throwException(
           error: 'Insufficient points',
           message: 'User does not have enough points for transfer',
         );
@@ -1192,7 +1192,7 @@ class UsersService extends TurboCollectionService<User, UsersApi> {
     return api.runTransaction((transaction) async {
       // Example of throwing inside transaction based on a condition
       if (fromUser.points < points) {
-        TurboResponse.throwFail(
+        TurboResponse.throwException(
           error: 'Insufficient points',
           message: 'User does not have enough points for transfer',
         );
@@ -1248,7 +1248,7 @@ Key features of TurboResponse error handling:
 3. **Type-safe Responses**: Generic type parameter for success value
 4. **Convenient Fold Pattern**: Simple success/failure handling with `fold`
 5. **Transaction Support**: Methods automatically throw to abort transactions on failure
-6. **Manual Throwing**: Use `TurboResponse.throwFail()` or `response.tryThrowFail()` for custom conditions
+6. **Manual Throwing**: Use `TurboResponse.throwException()` or `response.tryThrowFail()` for custom conditions
 7. **Rich Error Context**: Includes error message, stack trace, and location
 8. **Chainable Operations**: Combine multiple operations with error short-circuiting
 9. **Automatic Logging**: Errors are automatically logged with proper context

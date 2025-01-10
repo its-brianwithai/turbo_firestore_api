@@ -54,8 +54,7 @@ part 'before_after_sync_turbo_collection_service.dart';
 /// - Error handling and logging
 /// - User authentication state synchronization
 abstract class TurboCollectionService<T extends TurboWriteableId<String>,
-        API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<List<T>>
-    with Loglytics {
+    API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<List<T>> with Loglytics {
   /// Creates a new [TurboCollectionService] instance.
   ///
   /// Parameters:
@@ -318,7 +317,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
       tempBlockStreamUpdates(future);
       final turboResponse = await future;
       if (transaction != null) {
-        turboResponse.tryThrowFail();
+        turboResponse.throwWhenFail();
       }
       return turboResponse;
     } catch (error, stackTrace) {
@@ -328,7 +327,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.emptyFail();
+      return TurboResponse.fail(error: error);
     }
   }
 
@@ -364,7 +363,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
       tempBlockStreamUpdates(future);
       final turboResponse = await future;
       if (transaction != null) {
-        turboResponse.tryThrowFail();
+        turboResponse.throwWhenFail();
       }
       return turboResponse;
     } catch (error, stackTrace) {
@@ -374,7 +373,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.emptyFail();
+      return TurboResponse.fail(error: error);
     }
   }
 
@@ -392,7 +391,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   ///
   /// Returns a [TurboResponse] indicating success or failure
   @protected
-  Future<TurboResponse> updateDocs({
+  Future<TurboResponse<void>> updateDocs({
     TurboWriteable Function(T doc)? remoteUpdateRequestBuilder,
     bool doNotifyListeners = true,
     required List<T> docs,
@@ -408,9 +407,9 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
             transaction: transaction,
             writeable: remoteUpdateRequestBuilder?.call(doc) ?? doc,
           ))
-              .tryThrowFail();
+              .throwWhenFail();
         }
-        return TurboResponse.emptySuccess();
+        return TurboResponse.success(result: null);
       } else {
         final batch = api.writeBatch;
         for (final doc in docs) {
@@ -423,7 +422,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
         final future = batch.commit();
         tempBlockStreamUpdates(future);
         await future;
-        return TurboResponse.emptySuccess();
+        return TurboResponse.success(result: null);
       }
     } catch (error, stackTrace) {
       if (transaction != null) rethrow;
@@ -432,7 +431,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.emptyFail();
+      return TurboResponse.fail(error: error);
     }
   }
 
@@ -449,7 +448,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   ///
   /// Returns a [TurboResponse] indicating success or failure
   @protected
-  Future<TurboResponse> createDocs({
+  Future<TurboResponse<void>> createDocs({
     bool doNotifyListeners = true,
     required List<T> docs,
     Transaction? transaction,
@@ -464,9 +463,9 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
             transaction: transaction,
             writeable: doc,
           ))
-              .tryThrowFail();
+              .throwWhenFail();
         }
-        return TurboResponse.emptySuccess();
+        return TurboResponse.success(result: null);
       } else {
         final batch = api.writeBatch;
         for (final doc in docs) {
@@ -479,7 +478,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
         final future = batch.commit();
         tempBlockStreamUpdates(future);
         await future;
-        return TurboResponse.emptySuccess();
+        return TurboResponse.success(result: null);
       }
     } catch (error, stackTrace) {
       if (transaction != null) rethrow;
@@ -488,7 +487,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.emptyFail();
+      return TurboResponse.fail(error: error);
     }
   }
 
@@ -520,7 +519,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
       tempBlockStreamUpdates(future);
       final turboResponse = await future;
       if (transaction != null) {
-        turboResponse.tryThrowFail();
+        turboResponse.throwWhenFail();
       }
       return turboResponse;
     } catch (error, stackTrace) {
@@ -530,7 +529,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.emptyFail();
+      return TurboResponse.fail(error: error);
     }
   }
 
@@ -547,7 +546,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   ///
   /// Returns a [TurboResponse] indicating success or failure
   @protected
-  Future<TurboResponse> deleteDocs({
+  Future<TurboResponse<void>> deleteDocs({
     required List<T> docs,
     bool doNotifyListeners = true,
     Transaction? transaction,
@@ -561,9 +560,9 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
             id: doc.id,
             transaction: transaction,
           ))
-              .tryThrowFail();
+              .throwWhenFail();
         }
-        return TurboResponse.emptySuccess();
+        return TurboResponse.success(result: null);
       } else {
         final batch = api.writeBatch;
         for (final doc in docs) {
@@ -575,7 +574,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
         final future = batch.commit();
         tempBlockStreamUpdates(future);
         await future;
-        return TurboResponse.emptySuccess();
+        return TurboResponse.success(result: null);
       }
     } catch (error, stackTrace) {
       if (transaction != null) rethrow;
@@ -584,7 +583,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.emptyFail();
+      return TurboResponse.fail(error: error);
     }
   }
 
@@ -616,16 +615,14 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
       );
       final future = api.createDoc(
         merge: true,
-        writeable: doc.isLocalDefault
-            ? doc
-            : remoteUpdateRequestBuilder?.call(doc) ?? doc,
+        writeable: doc.isLocalDefault ? doc : remoteUpdateRequestBuilder?.call(doc) ?? doc,
         id: doc.id,
         transaction: transaction,
       );
       tempBlockStreamUpdates(future);
       final turboResponse = await future;
       if (transaction != null) {
-        turboResponse.tryThrowFail();
+        turboResponse.throwWhenFail();
       }
       return turboResponse;
     } catch (error, stackTrace) {
@@ -635,7 +632,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.emptyFail();
+      return TurboResponse.fail(error: error);
     }
   }
 
@@ -653,7 +650,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   ///
   /// Returns a [TurboResponse] indicating success or failure
   @protected
-  Future<TurboResponse> upsertDocs({
+  Future<TurboResponse<void>> upsertDocs({
     TurboWriteable Function(T doc)? remoteUpdateRequestBuilder,
     bool doNotifyListeners = true,
     required List<T> docs,
@@ -667,30 +664,26 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
           (await api.createDoc(
             id: doc.id,
             transaction: transaction,
-            writeable: doc.isLocalDefault
-                ? doc
-                : remoteUpdateRequestBuilder?.call(doc) ?? doc,
+            writeable: doc.isLocalDefault ? doc : remoteUpdateRequestBuilder?.call(doc) ?? doc,
             merge: true,
           ))
-              .tryThrowFail();
+              .throwWhenFail();
         }
-        return TurboResponse.emptySuccess();
+        return TurboResponse.success(result: null);
       } else {
         final batch = api.writeBatch;
         for (final doc in docs) {
           await api.createDocs(
             id: doc.id,
             writeBatch: batch,
-            writeable: doc.isLocalDefault
-                ? doc
-                : remoteUpdateRequestBuilder?.call(doc) ?? doc,
+            writeable: doc.isLocalDefault ? doc : remoteUpdateRequestBuilder?.call(doc) ?? doc,
             merge: true,
           );
         }
         final future = batch.commit();
         tempBlockStreamUpdates(future);
         await future;
-        return TurboResponse.emptySuccess();
+        return TurboResponse.success(result: null);
       }
     } catch (error, stackTrace) {
       if (transaction != null) rethrow;
@@ -699,7 +692,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.emptyFail();
+      return TurboResponse.fail(error: error);
     }
   }
 

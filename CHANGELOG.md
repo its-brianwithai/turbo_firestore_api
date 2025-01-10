@@ -1,3 +1,8 @@
+## 0.1.2
+
+* **⬆️ Upgrade:** Updated turbo_response to version 0.2.6
+* **🔄 Change:** Replaced tryThrowFail() with throwWhenFail() to match new TurboResponse API
+
 ## 0.1.1
 
 * **🐛 Fix:** Remove default stream implementation in `TurboCollectionService` to enforce inheritance.

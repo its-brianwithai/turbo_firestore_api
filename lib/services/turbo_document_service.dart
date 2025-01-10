@@ -30,8 +30,7 @@ import '../extensions/completer_extension.dart';
 /// - [T] - The document type, must extend [TurboWriteableId<String>]
 /// - [API] - The Firestore API type, must extend [TurboFirestoreApi<T>]
 abstract class TurboDocumentService<T extends TurboWriteableId<String>,
-        API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<T?>
-    with Loglytics {
+    API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<T?> with Loglytics {
   /// Creates a new [TurboDocumentService] instance.
   ///
   /// Parameters:
@@ -101,9 +100,8 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   // 🎩 STATE --------------------------------------------------------------------------------- \\
 
   /// Local state for the document.
-  late final _doc = Informer<T?>(
-      initialValueLocator?.call() ?? defaultValueLocator?.call(),
-      forceUpdate: true);
+  late final _doc =
+      Informer<T?>(initialValueLocator?.call() ?? defaultValueLocator?.call(), forceUpdate: true);
 
   /// Completer that resolves when the service is ready.
   final _isReady = Completer();
@@ -263,9 +261,7 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
       upsertLocalDoc(doc: doc, doNotifyListeners: doNotifyListeners);
       final future = api.createDoc(
         merge: true,
-        writeable: doc.isLocalDefault
-            ? doc
-            : remoteUpdateRequestBuilder?.call(doc) ?? doc,
+        writeable: doc.isLocalDefault ? doc : remoteUpdateRequestBuilder?.call(doc) ?? doc,
         id: doc.id,
         transaction: transaction,
       );
@@ -277,7 +273,7 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.emptyFail();
+      return TurboResponse.fail(error: error);
     }
   }
 
@@ -311,7 +307,7 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.emptyFail();
+      return TurboResponse.fail(error: error);
     }
   }
 
@@ -351,7 +347,7 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.emptyFail();
+      return TurboResponse.fail(error: error);
     }
   }
 
@@ -389,7 +385,7 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.emptyFail();
+      return TurboResponse.fail(error: error);
     }
   }
 }

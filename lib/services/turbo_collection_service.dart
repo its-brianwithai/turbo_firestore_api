@@ -54,7 +54,8 @@ part 'before_after_sync_turbo_collection_service.dart';
 /// - Error handling and logging
 /// - User authentication state synchronization
 abstract class TurboCollectionService<T extends TurboWriteableId<String>,
-    API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<List<T>> with Loglytics {
+        API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<List<T>>
+    with Loglytics {
   /// Creates a new [TurboCollectionService] instance.
   ///
   /// Parameters:
@@ -615,7 +616,9 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
       );
       final future = api.createDoc(
         merge: true,
-        writeable: doc.isLocalDefault ? doc : remoteUpdateRequestBuilder?.call(doc) ?? doc,
+        writeable: doc.isLocalDefault
+            ? doc
+            : remoteUpdateRequestBuilder?.call(doc) ?? doc,
         id: doc.id,
         transaction: transaction,
       );
@@ -664,7 +667,9 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
           (await api.createDoc(
             id: doc.id,
             transaction: transaction,
-            writeable: doc.isLocalDefault ? doc : remoteUpdateRequestBuilder?.call(doc) ?? doc,
+            writeable: doc.isLocalDefault
+                ? doc
+                : remoteUpdateRequestBuilder?.call(doc) ?? doc,
             merge: true,
           ))
               .throwWhenFail();
@@ -676,7 +681,9 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
           await api.createDocs(
             id: doc.id,
             writeBatch: batch,
-            writeable: doc.isLocalDefault ? doc : remoteUpdateRequestBuilder?.call(doc) ?? doc,
+            writeable: doc.isLocalDefault
+                ? doc
+                : remoteUpdateRequestBuilder?.call(doc) ?? doc,
             merge: true,
           );
         }

@@ -256,7 +256,8 @@ extension TurboFirestoreGetApi<T> on TurboFirestoreApi<T> {
               );
         } catch (error) {
           _log.error(
-            message: 'Unexpected error caught while adding local id and document reference',
+            message:
+                'Unexpected error caught while adding local id and document reference',
             sensitiveData: SensitiveData(
               path: collectionPathOverride ?? _collectionPath(),
               id: snapshot.id,
@@ -279,7 +280,8 @@ extension TurboFirestoreGetApi<T> on TurboFirestoreApi<T> {
               );
         } catch (error) {
           _log.error(
-            message: 'Unexpected error caught while removing local id and document reference',
+            message:
+                'Unexpected error caught while removing local id and document reference',
             sensitiveData: SensitiveData(
               path: collectionPathOverride ?? _collectionPath(),
               id: id,
@@ -358,7 +360,8 @@ extension TurboFirestoreGetApi<T> on TurboFirestoreApi<T> {
           );
         } catch (error, stackTrace) {
           _log.error(
-            message: 'Unexpected error caught while adding local id and document reference',
+            message:
+                'Unexpected error caught while adding local id and document reference',
             sensitiveData: SensitiveData(
               path: collectionPathOverride ?? _collectionPath(),
               id: snapshot.id,
@@ -388,7 +391,8 @@ extension TurboFirestoreGetApi<T> on TurboFirestoreApi<T> {
             );
           } catch (error, stackTrace) {
             _log.error(
-              message: 'Unexpected error caught while adding local id and document reference',
+              message:
+                  'Unexpected error caught while adding local id and document reference',
               sensitiveData: SensitiveData(
                 path: collectionPathOverride ?? _collectionPath(),
                 id: snapshot.id,
@@ -414,7 +418,8 @@ extension TurboFirestoreGetApi<T> on TurboFirestoreApi<T> {
               );
         } catch (error) {
           _log.error(
-            message: 'Unexpected error caught while removing local id and document reference',
+            message:
+                'Unexpected error caught while removing local id and document reference',
             sensitiveData: SensitiveData(
               path: collectionPathOverride ?? _collectionPath(),
               id: id,
@@ -464,7 +469,8 @@ extension TurboFirestoreGetApi<T> on TurboFirestoreApi<T> {
       'therefore, you must specify the collectionPathOverride containing all parent collection and document ids '
       'in order to make this method work.',
     );
-    final docRef = getDocRefById(id: id, collectionPathOverride: collectionPathOverride);
+    final docRef =
+        getDocRefById(id: id, collectionPathOverride: collectionPathOverride);
     _log.debug(
       message: 'Finding document snapshot..',
       sensitiveData: SensitiveData(

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:turbo_firestore_api/models/turbo_api_vars.dart';
 import 'package:turbo_firestore_api/abstracts/turbo_writeable.dart';
 import 'package:turbo_firestore_api/enums/turbo_search_term_type.dart';
 import 'package:turbo_firestore_api/enums/turbo_timestamp_type.dart';
@@ -216,6 +217,14 @@ class TurboFirestoreApi<T> {
   // 🎩 STATE --------------------------------------------------------------------------------- \\
   // 🛠 UTIL ---------------------------------------------------------------------------------- \\
   // 🧲 FETCHERS ------------------------------------------------------------------------------ \\
+
+  /// Returns a new instance of [V] with basic variables filled in.
+  V vars<V extends TurboApiVars>() {
+    return TurboApiVars(
+      id: genId,
+      now: DateTime.now(),
+    ) as V;
+  }
 
   /// Helper method to fetch a [WriteBatch] from [_firebaseFirestore]..
   WriteBatch get writeBatch => _firebaseFirestore.batch();

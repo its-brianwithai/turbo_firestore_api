@@ -1,3 +1,7 @@
+## 0.1.3
+
+* **✨ New:** Added `TurboApiVars` and `TurboAuthVars` classes for standardized document variables
+
 ## 0.1.2
 
 * **⬆️ Upgrade:** Updated turbo_response to version 0.2.6

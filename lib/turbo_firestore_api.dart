@@ -41,13 +41,12 @@ library;
 
 /// Core utilities for logging, debugging and
 export 'util/turbo_firestore_logger.dart';
-export 'util/turbo_debouncer.dart';
-export 'util/turbo_mutex.dart';
-export 'util/turbo_block_debouncer.dart';
 
 /// Abstract interfaces for API functionality
 export 'abstracts/turbo_writeable.dart';
 export 'abstracts/turbo_writeable_id.dart';
+export 'models/turbo_auth_vars.dart';
+export 'models/turbo_api_vars.dart';
 
 /// Main API class and extensions
 export 'apis/turbo_firestore_api.dart';

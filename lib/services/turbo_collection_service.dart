@@ -8,6 +8,7 @@ import 'package:turbo_firestore_api/abstracts/turbo_writeable.dart';
 import 'package:turbo_firestore_api/abstracts/turbo_writeable_id.dart';
 import 'package:turbo_firestore_api/apis/turbo_firestore_api.dart';
 import 'package:turbo_firestore_api/extensions/completer_extension.dart';
+import 'package:turbo_firestore_api/models/turbo_auth_vars.dart';
 import 'package:turbo_firestore_api/typedefs/turbo_doc_builder.dart';
 import 'package:turbo_response/turbo_response.dart';
 import 'package:turbo_firestore_api/extensions/turbo_list_extension.dart';
@@ -116,6 +117,13 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
 
   // 🛠 UTIL ---------------------------------------------------------------------------------- \\
   // 🧲 FETCHERS ------------------------------------------------------------------------------ \\
+
+  /// Returns a new instance of [V] with basic variables filled in.
+  V vars<V extends TurboAuthVars>() => TurboAuthVars(
+        id: api.genId,
+        now: DateTime.now(),
+        userId: cachedUserId,
+      ) as V;
 
   /// Value listenable for the document collection state.
   ValueListenable<Map<String, T>> get docsPerId => _docsPerId;

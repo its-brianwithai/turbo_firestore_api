@@ -8,6 +8,7 @@ import 'package:loglytics/loglytics.dart';
 import 'package:turbo_firestore_api/abstracts/turbo_writeable.dart';
 import 'package:turbo_firestore_api/abstracts/turbo_writeable_id.dart';
 import 'package:turbo_firestore_api/apis/turbo_firestore_api.dart';
+import 'package:turbo_firestore_api/models/turbo_auth_vars.dart';
 import 'package:turbo_firestore_api/services/turbo_auth_sync_service.dart';
 import 'package:turbo_firestore_api/typedefs/turbo_doc_builder.dart';
 import 'package:turbo_firestore_api/typedefs/turbo_locator_def.dart';
@@ -110,6 +111,15 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
 
   // 🛠 UTIL ---------------------------------------------------------------------------------- \\
   // 🧲 FETCHERS ------------------------------------------------------------------------------ \\
+
+  /// Returns a new instance of [V] with basic variables filled in.
+  V vars<V extends TurboAuthVars>() {
+    return TurboAuthVars(
+      id: api.genId,
+      now: DateTime.now(),
+      userId: cachedUserId,
+    ) as V;
+  }
 
   /// Function to provide initial document value.
   TurboLocatorDef<T>? initialValueLocator;

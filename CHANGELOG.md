@@ -1,3 +1,7 @@
+## 0.2.0
+
+* **⚠️ Breaking:** Updated dependencies to latest versions.
+
 ## 0.1.3
 
 * **✨ New:** Added `TurboApiVars` and `TurboAuthVars` classes for standardized document variables

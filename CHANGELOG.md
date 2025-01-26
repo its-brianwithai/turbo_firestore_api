@@ -1,3 +1,8 @@
+## 🚀 Version 0.4.0 (January 2024)
+
+* **💔 Breaking:** Renamed `createDoc` and `updateDoc` named parameter names to doc.
+* **🛠️ Improvement:** Update readme.
+
 ## 🚀 Version 0.3.0 (January 2024)
 ---
 ### 💔 Breaking:

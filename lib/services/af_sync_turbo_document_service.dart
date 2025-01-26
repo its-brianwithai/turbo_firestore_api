@@ -1,26 +1,26 @@
-part of 'turbo_collection_service.dart';
+part of 'turbo_document_service.dart';
 
-/// A collection service that allows notification after synchronizing data.
+/// A document service that allows notification after synchronizing data.
 ///
-/// Extends [TurboCollectionService] to provide a hook for notifying after
+/// Extends [TurboDocumentService] to provide a hook for notifying after
 /// the local state has been updated with new data from Firestore.
 ///
 /// Type Parameters:
 /// - [T] - The document type, must extend [TurboWriteableId<String>]
 /// - [API] - The Firestore API type, must extend [TurboFirestoreApi<T>]
-abstract class AfSyncTurboCollectionService<T extends TurboWriteableId<String>,
-    API extends TurboFirestoreApi<T>> extends TurboCollectionService<T, API> {
-  /// Creates a new [AfSyncTurboCollectionService] instance.
-  AfSyncTurboCollectionService({required super.api});
+abstract class AfSyncTurboDocumentService<T extends TurboWriteableId<String>,
+    API extends TurboFirestoreApi<T>> extends TurboDocumentService<T, API> {
+  /// Creates a new [AfSyncTurboDocumentService] instance.
+  AfSyncTurboDocumentService({required super.api});
 
   /// Called after the local state has been updated with new data.
   ///
   /// Use this method to perform any necessary operations after
-  /// the documents have been synchronized with local state.
+  /// the document has been synchronized with local state.
   ///
   /// Parameters:
-  /// - [docs] - The new documents from Firestore
-  void afterSyncNotifyUpdate(List<T> docs);
+  /// - [doc] - The new document from Firestore
+  void afterSyncNotifyUpdate(T? doc);
 
   /// Handles incoming data updates from Firestore with post-sync notification.
   ///
@@ -35,28 +35,29 @@ abstract class AfSyncTurboCollectionService<T extends TurboWriteableId<String>,
   /// - Clears local state if user is not authenticated
   ///
   /// Parameters:
-  /// - [value] - The new document values from Firestore
+  /// - [value] - The new document value from Firestore
   /// - [user] - The current Firebase user
   @override
-  void Function(List<T>? value, User? user) get onData {
+  void Function(T? value, User? user) get onData {
     return (value, user) {
-      final docs = value ?? [];
       if (user != null) {
-        log.debug('Updating docs for user ${user.uid}');
-        _docsPerId.update(
-          docs.toIdMap((element) => element.id),
+        log.debug('Updating doc for user ${user.uid}');
+        final pDoc = updateLocalDoc(
+          id: value?.id,
+          updateDoc: (_, __) => value,
           doNotifyListeners: canNotifyListeners,
         );
         _isReady.completeIfNotComplete();
-        afterSyncNotifyUpdate(docs);
-        log.debug('Updated ${docs.length} docs');
+        afterSyncNotifyUpdate(pDoc);
+        log.debug('Updated doc');
       } else {
-        log.debug('User is null, clearing docs');
-        _docsPerId.update(
-          {},
+        log.debug('User is null, clearing doc');
+        updateLocalDoc(
+          id: null,
+          updateDoc: (_, __) => null,
           doNotifyListeners: canNotifyListeners,
         );
-        afterSyncNotifyUpdate([]);
+        afterSyncNotifyUpdate(null);
       }
     };
   }

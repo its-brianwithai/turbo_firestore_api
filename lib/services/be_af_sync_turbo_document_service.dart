@@ -1,35 +1,35 @@
-part of 'turbo_collection_service.dart';
+part of 'turbo_document_service.dart';
 
-/// A collection service that allows notification both before and after synchronizing data.
+/// A document service that allows notification both before and after synchronizing data.
 ///
-/// Extends [TurboCollectionService] to provide hooks for notifying both before and after
+/// Extends [TurboDocumentService] to provide hooks for notifying both before and after
 /// the local state is updated with new data from Firestore.
 ///
 /// Type Parameters:
 /// - [T] - The document type, must extend [TurboWriteableId<String>]
 /// - [API] - The Firestore API type, must extend [TurboFirestoreApi<T>]
-abstract class BeAfSyncTurboCollectionService<T extends TurboWriteableId<String>,
-    API extends TurboFirestoreApi<T>> extends TurboCollectionService<T, API> {
-  /// Creates a new [BeAfSyncTurboCollectionService] instance.
-  BeAfSyncTurboCollectionService({required super.api});
+abstract class BeAfSyncTurboDocumentService<T extends TurboWriteableId<String>,
+    API extends TurboFirestoreApi<T>> extends TurboDocumentService<T, API> {
+  /// Creates a new [BeAfSyncTurboDocumentService] instance.
+  BeAfSyncTurboDocumentService({required super.api});
 
   /// Called before the local state is updated with new data.
   ///
   /// Use this method to perform any necessary operations before
-  /// the documents are synchronized with local state.
+  /// the document is synchronized with local state.
   ///
   /// Parameters:
-  /// - [docs] - The new documents from Firestore
-  void beforeSyncNotifyUpdate(List<T> docs);
+  /// - [doc] - The new document from Firestore
+  void beforeSyncNotifyUpdate(T? doc);
 
   /// Called after the local state has been updated with new data.
   ///
   /// Use this method to perform any necessary operations after
-  /// the documents have been synchronized with local state.
+  /// the document has been synchronized with local state.
   ///
   /// Parameters:
-  /// - [docs] - The new documents from Firestore
-  void afterSyncNotifyUpdate(List<T> docs);
+  /// - [doc] - The new document from Firestore
+  void afterSyncNotifyUpdate(T? doc);
 
   /// Handles incoming data updates from Firestore with pre and post-sync notifications.
   ///
@@ -45,30 +45,32 @@ abstract class BeAfSyncTurboCollectionService<T extends TurboWriteableId<String>
   /// - Clears local state if user is not authenticated
   ///
   /// Parameters:
-  /// - [value] - The new document values from Firestore
+  /// - [value] - The new document value from Firestore
   /// - [user] - The current Firebase user
   @override
-  void Function(List<T>? value, User? user) get onData {
+  void Function(T? value, User? user) get onData {
     return (value, user) {
-      final docs = value ?? [];
+      final doc = value;
       if (user != null) {
-        log.debug('Updating docs for user ${user.uid}');
-        beforeSyncNotifyUpdate(docs);
-        _docsPerId.update(
-          docs.toIdMap((element) => element.id),
+        log.debug('Updating doc for user ${user.uid}');
+        beforeSyncNotifyUpdate(doc);
+        final pDoc = updateLocalDoc(
+          id: value?.id,
+          updateDoc: (_, __) => value,
           doNotifyListeners: canNotifyListeners,
         );
         _isReady.completeIfNotComplete();
-        afterSyncNotifyUpdate(docs);
-        log.debug('Updated ${docs.length} docs');
+        afterSyncNotifyUpdate(pDoc);
+        log.debug('Updated doc');
       } else {
-        log.debug('User is null, clearing docs');
-        beforeSyncNotifyUpdate([]);
-        _docsPerId.update(
-          {},
+        log.debug('User is null, clearing doc');
+        beforeSyncNotifyUpdate(null);
+        updateLocalDoc(
+          id: null,
+          updateDoc: (_, __) => null,
           doNotifyListeners: canNotifyListeners,
         );
-        afterSyncNotifyUpdate([]);
+        afterSyncNotifyUpdate(null);
       }
     };
   }

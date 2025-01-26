@@ -138,8 +138,7 @@ extension TurboFirestoreStreamApi<T> on TurboFirestoreApi<T> {
   /// [streamByQueryWithConverter] type-safe query streaming
   /// [streamAll] unfiltered streaming
   Stream<List<Map<String, dynamic>>> streamByQuery({
-    required CollectionReferenceDef<Map<String, dynamic>>?
-        collectionReferenceQuery,
+    required CollectionReferenceDef<Map<String, dynamic>>? collectionReferenceQuery,
     required String whereDescription,
   }) {
     _log.debug(
@@ -149,8 +148,8 @@ extension TurboFirestoreStreamApi<T> on TurboFirestoreApi<T> {
         whereDescription: whereDescription,
       ),
     );
-    final query = collectionReferenceQuery?.call(listCollectionReference()) ??
-        listCollectionReference();
+    final query =
+        collectionReferenceQuery?.call(listCollectionReference()) ?? listCollectionReference();
     return query.snapshots().map(
           (event) => event.docs.map((e) => e.data()).toList(),
         );
@@ -202,8 +201,7 @@ extension TurboFirestoreStreamApi<T> on TurboFirestoreApi<T> {
         whereDescription: whereDescription,
       ),
     );
-    final query = collectionReferenceQuery
-            ?.call(listCollectionReferenceWithConverter()) ??
+    final query = collectionReferenceQuery?.call(listCollectionReferenceWithConverter()) ??
         listCollectionReferenceWithConverter();
     return query.snapshots().map(
           (event) => event.docs.map((e) => e.data()).toList(),
@@ -247,8 +245,7 @@ extension TurboFirestoreStreamApi<T> on TurboFirestoreApi<T> {
     required String id,
     String? collectionPathOverride,
   }) {
-    final docRef =
-        getDocRefById(id: id, collectionPathOverride: collectionPathOverride);
+    final docRef = getDocRefById(id: id, collectionPathOverride: collectionPathOverride);
     _log.debug(
       message: 'Finding doc stream..',
       sensitiveData: SensitiveData(

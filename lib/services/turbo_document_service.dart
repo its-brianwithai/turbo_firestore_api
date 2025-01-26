@@ -10,11 +10,15 @@ import 'package:turbo_firestore_api/abstracts/turbo_writeable_id.dart';
 import 'package:turbo_firestore_api/apis/turbo_firestore_api.dart';
 import 'package:turbo_firestore_api/models/turbo_auth_vars.dart';
 import 'package:turbo_firestore_api/services/turbo_auth_sync_service.dart';
-import 'package:turbo_firestore_api/typedefs/turbo_doc_builder.dart';
 import 'package:turbo_firestore_api/typedefs/turbo_locator_def.dart';
+import 'package:turbo_firestore_api/typedefs/create_doc_def.dart';
+import 'package:turbo_firestore_api/typedefs/update_doc_def.dart';
 import 'package:turbo_response/turbo_response.dart';
-
 import '../extensions/completer_extension.dart';
+
+part 'be_sync_turbo_document_service.dart';
+part 'be_af_sync_turbo_document_service.dart';
+part 'af_sync_turbo_document_service.dart';
 
 /// A service for managing a single Firestore document with synchronized local state.
 ///
@@ -31,8 +35,7 @@ import '../extensions/completer_extension.dart';
 /// - [T] - The document type, must extend [TurboWriteableId<String>]
 /// - [API] - The Firestore API type, must extend [TurboFirestoreApi<T>]
 abstract class TurboDocumentService<T extends TurboWriteableId<String>,
-        API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<T?>
-    with Loglytics {
+    API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<T?> with Loglytics {
   /// Creates a new [TurboDocumentService] instance.
   ///
   /// Parameters:
@@ -86,15 +89,22 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   @override
   void Function(T? value, User? user) get onData {
     return (value, user) {
-      final doc = value;
       if (user != null) {
         log.debug('Updating doc for user ${user.uid}');
-        upsertLocalDoc(doc: doc);
+        updateLocalDoc(
+          id: value?.id,
+          updateDoc: (_, __) => value,
+          doNotifyListeners: canNotifyListeners,
+        );
         _isReady.completeIfNotComplete();
         log.debug('Updated doc');
       } else {
         log.debug('User is null, clearing doc');
-        upsertLocalDoc(doc: doc);
+        updateLocalDoc(
+          id: null,
+          updateDoc: (_, __) => null,
+          doNotifyListeners: canNotifyListeners,
+        );
       }
     };
   }
@@ -102,9 +112,8 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   // 🎩 STATE --------------------------------------------------------------------------------- \\
 
   /// Local state for the document.
-  late final _doc = Informer<T?>(
-      initialValueLocator?.call() ?? defaultValueLocator?.call(),
-      forceUpdate: true);
+  late final _doc =
+      Informer<T?>(initialValueLocator?.call() ?? defaultValueLocator?.call(), forceUpdate: true);
 
   /// Completer that resolves when the service is ready.
   final _isReady = Completer();
@@ -113,9 +122,9 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   // 🧲 FETCHERS ------------------------------------------------------------------------------ \\
 
   /// Returns a new instance of [V] with basic variables filled in.
-  V vars<V extends TurboAuthVars>() {
+  V turboVars<V extends TurboAuthVars>({String? id}) {
     return TurboAuthVars(
-      id: api.genId,
+      id: id ?? api.genId,
       now: DateTime.now(),
       userId: cachedUserId,
     ) as V;
@@ -146,20 +155,6 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   bool get hasDoc => _doc.value != null;
 
   // 🏗️ HELPERS ------------------------------------------------------------------------------- \\
-
-  /// Builds a new document with generated ID and current timestamp.
-  ///
-  /// Parameters:
-  /// - [builder] - Function to build the document
-  T buildDoc(
-    TurboDocBuilder<T> builder,
-  ) =>
-      builder(
-        api.genId,
-        DateTime.now(),
-        cachedUserId,
-      );
-
   // ⚙️ LOCAL MUTATORS ------------------------------------------------------------------------ \\
 
   /// Forces a rebuild of the local state.
@@ -168,74 +163,57 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   /// Deletes a document from local state.
   ///
   /// Parameters:
-  /// - [doc] - The document to delete
+  /// - [id] - The document ID
   /// - [doNotifyListeners] - Whether to notify listeners of the change
   @protected
   void deleteLocalDoc({
-    required T doc,
+    required String id,
     bool doNotifyListeners = true,
   }) {
-    log.debug('Deleting local doc with id: ${doc.id}');
+    log.debug('Deleting local doc with id: $id');
     if (doNotifyListeners) {
-      beforeLocalNotifyUpdate?.call(doc);
+      beforeLocalNotifyUpdate?.call(null);
     }
     _doc.update(null, doNotifyListeners: doNotifyListeners);
     if (doNotifyListeners) {
-      afterLocalNotifyUpdate?.call(doc);
+      afterLocalNotifyUpdate?.call(null);
     }
   }
 
   /// Creates a new document in local state.
   ///
   /// Parameters:
-  /// - [doc] - The document to create
+  /// - [createDoc] - The document to create
   /// - [doNotifyListeners] - Whether to notify listeners of the change
   @protected
-  void createLocalDoc({
-    required T doc,
+  T createLocalDoc({
+    required CreateDocDef<T> createDoc,
     bool doNotifyListeners = true,
   }) {
-    log.debug('Creating local doc with id: ${doc.id}');
+    final pDoc = createDoc(turboVars());
+    log.debug('Creating local doc with id: ${pDoc.id}');
     if (doNotifyListeners) {
-      beforeLocalNotifyUpdate?.call(doc);
+      beforeLocalNotifyUpdate?.call(pDoc);
     }
-    _doc.update(doc, doNotifyListeners: doNotifyListeners);
+    _doc.update(pDoc, doNotifyListeners: doNotifyListeners);
     if (doNotifyListeners) {
-      afterLocalNotifyUpdate?.call(doc);
+      afterLocalNotifyUpdate?.call(pDoc);
     }
+    return pDoc;
   }
 
   /// Updates an existing document in local state.
   ///
   /// Parameters:
-  /// - [doc] - The document to update
+  /// - [updateDoc] - The document to update
   /// - [doNotifyListeners] - Whether to notify listeners of the change
   @protected
-  void updateLocalDoc({
-    required T doc,
+  T? updateLocalDoc({
+    required String? id,
+    required NullableUpdateDocDef<T> updateDoc,
     bool doNotifyListeners = true,
   }) {
-    log.debug('Updating local doc with id: ${doc.id}');
-    if (doNotifyListeners) {
-      beforeLocalNotifyUpdate?.call(doc);
-    }
-    _doc.update(doc, doNotifyListeners: doNotifyListeners);
-    if (doNotifyListeners) {
-      afterLocalNotifyUpdate?.call(doc);
-    }
-  }
-
-  /// Creates or updates a document in local state.
-  ///
-  /// Parameters:
-  /// - [doc] - The document to upsert
-  /// - [doNotifyListeners] - Whether to notify listeners of the change
-  @protected
-  void upsertLocalDoc({
-    required T? doc,
-    bool doNotifyListeners = true,
-  }) {
-    final pDoc = doc ?? defaultValueLocator?.call();
+    final pDoc = updateDoc(_doc.value, turboVars(id: id));
     log.debug('Updating local doc with id: ${pDoc?.id}');
     if (doNotifyListeners) {
       beforeLocalNotifyUpdate?.call(pDoc);
@@ -244,52 +222,10 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
     if (doNotifyListeners) {
       afterLocalNotifyUpdate?.call(pDoc);
     }
+    return pDoc;
   }
 
   // 🕹️ LOCAL & REMOTE MUTATORS --------------------------------------------------------------- \\
-
-  /// Creates or updates a document both locally and in Firestore.
-  ///
-  /// Performs an optimistic upsert by updating the local state first,
-  /// then syncing with Firestore. If the remote upsert fails, the local
-  /// state remains updated.
-  ///
-  /// Parameters:
-  /// - [doc] - The document to upsert
-  /// - [remoteUpdateRequestBuilder] - Optional builder for remote update data
-  /// - [doNotifyListeners] - Whether to notify listeners of the change
-  /// - [transaction] - Optional transaction for atomic operations
-  ///
-  /// Returns a [TurboResponse] with the upserted document reference
-  @protected
-  Future<TurboResponse<DocumentReference>> upsertDoc({
-    required T doc,
-    TurboWriteable Function(T doc)? remoteUpdateRequestBuilder,
-    bool doNotifyListeners = true,
-    Transaction? transaction,
-  }) async {
-    try {
-      log.debug('Upserting doc with id: ${doc.id}');
-      upsertLocalDoc(doc: doc, doNotifyListeners: doNotifyListeners);
-      final future = api.createDoc(
-        merge: true,
-        writeable: doc.isLocalDefault
-            ? doc
-            : remoteUpdateRequestBuilder?.call(doc) ?? doc,
-        id: doc.id,
-        transaction: transaction,
-      );
-      tempBlockStreamUpdates(future);
-      return await future;
-    } catch (error, stackTrace) {
-      log.error(
-        '$error caught while upserting doc',
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return TurboResponse.fail(error: error);
-    }
-  }
 
   /// Deletes a document both locally and from Firestore.
   ///
@@ -298,30 +234,48 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   /// state remains updated.
   ///
   /// Parameters:
-  /// - [doc] - The document to delete
+  /// - [id] - The document ID
   /// - [doNotifyListeners] - Whether to notify listeners of the change
+  /// - [transaction] - Optional transaction for atomic operations
   ///
   /// Returns a [TurboResponse] indicating success or failure
   @protected
-  Future<TurboResponse<void>> deleteDoc({
-    required T doc,
+  Future<TurboResponse> deleteDoc({
+    required String id,
     bool doNotifyListeners = true,
+    Transaction? transaction,
   }) async {
+    Completer? completer;
     try {
-      log.debug('Deleting doc with id: ${doc.id}');
-      deleteLocalDoc(doc: doc, doNotifyListeners: doNotifyListeners);
-      final future = api.deleteDoc(
-        id: doc.id,
+      log.debug('Deleting doc with id: $id');
+      final doc = _doc.value;
+      if (doc == null) {
+        throw StateError('Document not found');
+      }
+      deleteLocalDoc(
+        id: id,
+        doNotifyListeners: doNotifyListeners,
       );
-      tempBlockStreamUpdates(future);
-      return await future;
+      final future = api.deleteDoc(
+        id: id,
+        transaction: transaction,
+      );
+      completer = tempBlockLocalNotify();
+      final turboResponse = await future;
+      if (transaction != null) {
+        turboResponse.throwWhenFail();
+      }
+      return turboResponse;
     } catch (error, stackTrace) {
+      if (transaction != null) rethrow;
       log.error(
         '$error caught while deleting doc',
         error: error,
         stackTrace: stackTrace,
       );
       return TurboResponse.fail(error: error);
+    } finally {
+      completer?.complete();
     }
   }
 
@@ -332,36 +286,53 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   /// state remains updated.
   ///
   /// Parameters:
-  /// - [doc] - The document to update
-  /// - [remoteUpdateRequestBuilder] - Optional builder for remote update data
+  /// - [id] - The document ID
+  /// - [updateDoc] - The function to update the document
+  /// - [remoteUpdateRequestBuilder] - Optional function to build the remote update request
   /// - [doNotifyListeners] - Whether to notify listeners of the change
   /// - [transaction] - Optional transaction for atomic operations
   ///
   /// Returns a [TurboResponse] with the updated document reference
   @protected
-  Future<TurboResponse<DocumentReference>> updateDoc({
-    required T doc,
+  Future<TurboResponse<T>> updateDoc({
+    Transaction? transaction,
+    required String id,
+    required NullableUpdateDocDef<T> updateDoc,
     TurboWriteable Function(T doc)? remoteUpdateRequestBuilder,
     bool doNotifyListeners = true,
-    Transaction? transaction,
   }) async {
+    Completer? completer;
     try {
-      log.debug('Updating doc with id: ${doc.id}');
-      upsertLocalDoc(doc: doc, doNotifyListeners: doNotifyListeners);
+      log.debug('Updating doc with id: $id');
+      final pDoc = updateLocalDoc(
+        id: id,
+        updateDoc: updateDoc,
+        doNotifyListeners: doNotifyListeners,
+      );
+      if (pDoc == null) {
+        return TurboResponse.fail(error: StateError('Document not found'));
+      }
       final future = api.updateDoc(
-        writeable: remoteUpdateRequestBuilder?.call(doc) ?? doc,
-        id: doc.id,
+        writeable: remoteUpdateRequestBuilder?.call(pDoc) ?? pDoc,
+        id: id,
         transaction: transaction,
       );
-      tempBlockStreamUpdates(future);
-      return await future;
+      completer = tempBlockLocalNotify();
+      final turboResponse = await future;
+      if (transaction != null) {
+        turboResponse.throwWhenFail();
+      }
+      return turboResponse.mapSuccess((_) => pDoc);
     } catch (error, stackTrace) {
+      if (transaction != null) rethrow;
       log.error(
         '$error caught while updating doc',
         error: error,
         stackTrace: stackTrace,
       );
       return TurboResponse.fail(error: error);
+    } finally {
+      completer?.complete();
     }
   }
 
@@ -372,34 +343,46 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   /// state remains updated.
   ///
   /// Parameters:
-  /// - [doc] - The document to create
+  /// - [id] - The document ID
+  /// - [createDoc] - The function to create the document
   /// - [doNotifyListeners] - Whether to notify listeners of the change
   /// - [transaction] - Optional transaction for atomic operations
   ///
   /// Returns a [TurboResponse] with the created document reference
   @protected
-  Future<TurboResponse<DocumentReference>> createDoc({
-    required T doc,
-    bool doNotifyListeners = true,
+  Future<TurboResponse<T>> createDoc({
     Transaction? transaction,
+    required CreateDocDef<T> createDoc,
+    bool doNotifyListeners = true,
   }) async {
+    Completer? completer;
     try {
-      log.debug('Creating doc with id: ${doc.id}');
-      upsertLocalDoc(doc: doc, doNotifyListeners: doNotifyListeners);
+      final pDoc = createLocalDoc(
+        createDoc: createDoc,
+        doNotifyListeners: doNotifyListeners,
+      );
+      log.debug('Creating doc with id: ${pDoc.id}');
       final future = api.createDoc(
-        writeable: doc,
-        id: doc.id,
+        writeable: pDoc,
+        id: pDoc.id,
         transaction: transaction,
       );
-      tempBlockStreamUpdates(future);
-      return await future;
+      completer = tempBlockLocalNotify();
+      final turboResponse = await future;
+      if (transaction != null) {
+        turboResponse.throwWhenFail();
+      }
+      return turboResponse.mapSuccess((_) => pDoc);
     } catch (error, stackTrace) {
+      if (transaction != null) rethrow;
       log.error(
         '$error caught while creating doc',
         error: error,
         stackTrace: stackTrace,
       );
       return TurboResponse.fail(error: error);
+    } finally {
+      completer?.complete();
     }
   }
 }

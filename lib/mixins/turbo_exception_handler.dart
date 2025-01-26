@@ -43,8 +43,7 @@ mixin TurboExceptionHandler {
     required Log log,
   }) {
     log.error('Handling FirebaseAuthException: ${firebaseAuthException.code}');
-    log.error(
-        'Handling FirebaseAuthException: ${firebaseAuthException.message}  ');
+    log.error('Handling FirebaseAuthException: ${firebaseAuthException.message}  ');
     switch (firebaseAuthException.code) {
       case kErrorsInvalidLoginCredentials:
         return TurboResponse.fail(
@@ -62,8 +61,7 @@ mixin TurboExceptionHandler {
         return TurboResponse.fail(
           error: firebaseAuthException,
           title: 'Invalid credential',
-          message:
-              'Something went wrong verifying the credential, please try again.',
+          message: 'Something went wrong verifying the credential, please try again.',
         );
       case kErrorsOperationNotAllowed:
         return TurboResponse.fail(
@@ -76,15 +74,13 @@ mixin TurboExceptionHandler {
         return TurboResponse.fail(
           error: firebaseAuthException,
           title: 'Account disabled',
-          message:
-              'The account corresponding to the credential is disabled, please try again.',
+          message: 'The account corresponding to the credential is disabled, please try again.',
         );
       case kErrorsUserNotFound:
         return TurboResponse.fail(
           error: firebaseAuthException,
           title: 'Account not found',
-          message:
-              'The account corresponding to the credential was not found, please try again.',
+          message: 'The account corresponding to the credential was not found, please try again.',
         );
       case kErrorsWrongPassword:
         return TurboResponse.fail(
@@ -96,15 +92,13 @@ mixin TurboExceptionHandler {
         return TurboResponse.fail(
           error: firebaseAuthException,
           title: 'Invalid verification code',
-          message:
-              'The verification code of the credential is invalid, please try again.',
+          message: 'The verification code of the credential is invalid, please try again.',
         );
       case kErrorsInvalidVerificationId:
         return TurboResponse.fail(
           error: firebaseAuthException,
           title: 'Invalid verification id',
-          message:
-              'The verification id of the credential is invalid, please try again.',
+          message: 'The verification id of the credential is invalid, please try again.',
         );
       case kErrorsInvalidEmail:
         return TurboResponse.fail(
@@ -116,8 +110,7 @@ mixin TurboExceptionHandler {
         return TurboResponse.fail(
           error: firebaseAuthException,
           title: 'Email already in use',
-          message:
-              'The email used already exists, please use a different email or try to log in.',
+          message: 'The email used already exists, please use a different email or try to log in.',
         );
       case kErrorsWeakPassword:
         return TurboResponse.fail(
@@ -129,8 +122,7 @@ mixin TurboExceptionHandler {
         return TurboResponse.fail(
           error: firebaseAuthException,
           title: 'Invalid Phone Number',
-          message:
-              'The phone number has an invalid format. Please input a valid phone number.',
+          message: 'The phone number has an invalid format. Please input a valid phone number.',
         );
       case kErrorsCaptchaCheckFailed:
         return TurboResponse.fail(

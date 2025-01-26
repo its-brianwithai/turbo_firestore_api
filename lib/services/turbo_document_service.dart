@@ -93,7 +93,7 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
         log.debug('Updating doc for user ${user.uid}');
         updateLocalDoc(
           id: value?.id,
-          updateDoc: (_, __) => value,
+          doc: (_, __) => value,
           doNotifyListeners: canNotifyListeners,
         );
         _isReady.completeIfNotComplete();
@@ -102,7 +102,7 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
         log.debug('User is null, clearing doc');
         updateLocalDoc(
           id: null,
-          updateDoc: (_, __) => null,
+          doc: (_, __) => null,
           doNotifyListeners: canNotifyListeners,
         );
       }
@@ -183,14 +183,14 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   /// Creates a new document in local state.
   ///
   /// Parameters:
-  /// - [createDoc] - The document to create
+  /// - [doc] - The document to create
   /// - [doNotifyListeners] - Whether to notify listeners of the change
   @protected
   T createLocalDoc({
-    required CreateDocDef<T> createDoc,
+    required CreateDocDef<T> doc,
     bool doNotifyListeners = true,
   }) {
-    final pDoc = createDoc(turboVars());
+    final pDoc = doc(turboVars());
     log.debug('Creating local doc with id: ${pDoc.id}');
     if (doNotifyListeners) {
       beforeLocalNotifyUpdate?.call(pDoc);
@@ -205,15 +205,15 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   /// Updates an existing document in local state.
   ///
   /// Parameters:
-  /// - [updateDoc] - The document to update
+  /// - [doc] - The document to update
   /// - [doNotifyListeners] - Whether to notify listeners of the change
   @protected
   T? updateLocalDoc({
     required String? id,
-    required NullableUpdateDocDef<T> updateDoc,
+    required NullableUpdateDocDef<T> doc,
     bool doNotifyListeners = true,
   }) {
-    final pDoc = updateDoc(_doc.value, turboVars(id: id));
+    final pDoc = doc(_doc.value, turboVars(id: id));
     log.debug('Updating local doc with id: ${pDoc?.id}');
     if (doNotifyListeners) {
       beforeLocalNotifyUpdate?.call(pDoc);
@@ -287,7 +287,7 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   ///
   /// Parameters:
   /// - [id] - The document ID
-  /// - [updateDoc] - The function to update the document
+  /// - [doc] - The function to update the document
   /// - [remoteUpdateRequestBuilder] - Optional function to build the remote update request
   /// - [doNotifyListeners] - Whether to notify listeners of the change
   /// - [transaction] - Optional transaction for atomic operations
@@ -297,7 +297,7 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   Future<TurboResponse<T>> updateDoc({
     Transaction? transaction,
     required String id,
-    required NullableUpdateDocDef<T> updateDoc,
+    required NullableUpdateDocDef<T> doc,
     TurboWriteable Function(T doc)? remoteUpdateRequestBuilder,
     bool doNotifyListeners = true,
   }) async {
@@ -306,7 +306,7 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
       log.debug('Updating doc with id: $id');
       final pDoc = updateLocalDoc(
         id: id,
-        updateDoc: updateDoc,
+        doc: doc,
         doNotifyListeners: doNotifyListeners,
       );
       if (pDoc == null) {
@@ -344,7 +344,7 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   ///
   /// Parameters:
   /// - [id] - The document ID
-  /// - [createDoc] - The function to create the document
+  /// - [doc] - The function to create the document
   /// - [doNotifyListeners] - Whether to notify listeners of the change
   /// - [transaction] - Optional transaction for atomic operations
   ///
@@ -352,13 +352,13 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   @protected
   Future<TurboResponse<T>> createDoc({
     Transaction? transaction,
-    required CreateDocDef<T> createDoc,
+    required CreateDocDef<T> doc,
     bool doNotifyListeners = true,
   }) async {
     Completer? completer;
     try {
       final pDoc = createLocalDoc(
-        createDoc: createDoc,
+        doc: doc,
         doNotifyListeners: doNotifyListeners,
       );
       log.debug('Creating doc with id: ${pDoc.id}');

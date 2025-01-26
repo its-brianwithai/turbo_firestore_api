@@ -44,7 +44,7 @@ abstract class AfSyncTurboDocumentService<T extends TurboWriteableId<String>,
         log.debug('Updating doc for user ${user.uid}');
         final pDoc = updateLocalDoc(
           id: value?.id,
-          updateDoc: (_, __) => value,
+          doc: (_, __) => value,
           doNotifyListeners: canNotifyListeners,
         );
         _isReady.completeIfNotComplete();
@@ -54,7 +54,7 @@ abstract class AfSyncTurboDocumentService<T extends TurboWriteableId<String>,
         log.debug('User is null, clearing doc');
         updateLocalDoc(
           id: null,
-          updateDoc: (_, __) => null,
+          doc: (_, __) => null,
           doNotifyListeners: canNotifyListeners,
         );
         afterSyncNotifyUpdate(null);

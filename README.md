@@ -218,7 +218,7 @@ final api = TurboFirestoreApi<User>(
 
 // Validation happens automatically during create/update operations
 final response = await api.createDoc(
-  createDoc: (vars) => User(
+  doc: (vars) => User(
     id: vars.id,
     userId: vars.userId,
     name: 'John',
@@ -1310,7 +1310,7 @@ class UsersService extends TurboCollectionService<User, UsersApi> {
     required int age,
   }) {
     return createDoc(
-      createDoc: (vars) => User(
+      doc: (vars) => User(
         id: vars.id,           // Auto-generated ID
         createdAt: vars.now,   // Current timestamp
         createdBy: vars.userId,// Current user's ID
@@ -1373,7 +1373,7 @@ class ProductDocumentService extends BeSyncTurboDocumentService<Product, Product
 
   Future<TurboResponse<T>> createProduct(String name, double price) {
     return createDoc(
-      createDoc: (vars) => Product(
+      doc: (vars) => Product(
         id: vars.id,
         userId: vars.userId,
         name: name,

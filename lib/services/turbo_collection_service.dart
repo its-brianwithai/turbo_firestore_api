@@ -196,16 +196,16 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   ///
   /// Parameters:
   /// - [id] - The ID of the document to update
-  /// - [updateDoc] - The definition of how to update the document
+  /// - [doc] - The definition of how to update the document
   /// - [doNotifyListeners] - Whether to notify listeners of the change
   @protected
   T updateLocalDoc({
     required String id,
-    required UpdateDocDef<T> updateDoc,
+    required UpdateDocDef<T> doc,
     bool doNotifyListeners = true,
   }) {
     log.debug('Updating local doc with id: $id');
-    final pDoc = updateDoc(
+    final pDoc = doc(
       findById(id),
       turboVars(id: id),
     );
@@ -224,14 +224,14 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   ///
   /// Parameters:
   /// - [id] - The ID of the document to create
-  /// - [createDoc] - The definition of how to create the document
+  /// - [doc] - The definition of how to create the document
   /// - [doNotifyListeners] - Whether to notify listeners of the change
   @protected
   T createLocalDoc({
-    required CreateDocDef<T> createDoc,
+    required CreateDocDef<T> doc,
     bool doNotifyListeners = true,
   }) {
-    final pDoc = createDoc(
+    final pDoc = doc(
       turboVars(),
     );
     log.debug('Creating local doc with id: ${pDoc.id}');
@@ -246,18 +246,18 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   ///
   /// Parameters:
   /// - [ids] - The IDs of the documents to update
-  /// - [updateDoc] - The definition of how to update the documents
+  /// - [doc] - The definition of how to update the documents
   /// - [doNotifyListeners] - Whether to notify listeners of the changes
   @protected
   List<T> updateLocalDocs({
     required List<String> ids,
-    required UpdateDocDef<T> updateDoc,
+    required UpdateDocDef<T> doc,
     bool doNotifyListeners = true,
   }) {
     log.debug('Updating ${ids.length} local docs');
     final pDocs = <T>[];
     for (final id in ids) {
-      final pDoc = updateLocalDoc(id: id, updateDoc: updateDoc, doNotifyListeners: false);
+      final pDoc = updateLocalDoc(id: id, doc: doc, doNotifyListeners: false);
       pDocs.add(pDoc);
     }
     if (doNotifyListeners) _docsPerId.rebuild();
@@ -268,17 +268,17 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   ///
   /// Parameters:
   /// - [ids] - The IDs of the documents to create
-  /// - [createDocs] - The definition of how to create the documents
+  /// - [docs] - The definition of how to create the documents
   /// - [doNotifyListeners] - Whether to notify listeners of the changes
   @protected
   List<T> createLocalDocs({
-    required List<CreateDocDef<T>> createDocs,
+    required List<CreateDocDef<T>> docs,
     bool doNotifyListeners = true,
   }) {
-    log.debug('Creating ${createDocs.length} local docs');
+    log.debug('Creating ${docs.length} local docs');
     final pDocs = <T>[];
-    for (final createDoc in createDocs) {
-      final pDoc = createLocalDoc(createDoc: createDoc, doNotifyListeners: false);
+    for (final doc in docs) {
+      final pDoc = createLocalDoc(doc: doc, doNotifyListeners: false);
       pDocs.add(pDoc);
     }
     if (doNotifyListeners) _docsPerId.rebuild();
@@ -296,7 +296,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   /// Parameters:
   /// - [transaction] - Optional transaction for atomic operations
   /// - [id] - The ID of the document to update
-  /// - [updateDoc] - The definition of how to update the document
+  /// - [doc] - The definition of how to update the document
   /// - [remoteUpdateRequestBuilder] - Optional builder to modify the document before updating
   /// - [doNotifyListeners] - Whether to notify listeners of the change
   ///
@@ -305,7 +305,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   Future<TurboResponse<T>> updateDoc({
     Transaction? transaction,
     required String id,
-    required UpdateDocDef<T> updateDoc,
+    required UpdateDocDef<T> doc,
     TurboWriteable Function(T doc)? remoteUpdateRequestBuilder,
     bool doNotifyListeners = true,
   }) async {
@@ -314,7 +314,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
       log.debug('Updating doc with id: $id');
       final pDoc = updateLocalDoc(
         id: id,
-        updateDoc: updateDoc,
+        doc: doc,
         doNotifyListeners: doNotifyListeners,
       );
       final future = api.updateDoc(
@@ -350,20 +350,20 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   /// Parameters:
   /// - [transaction] - Optional transaction for atomic operations
   /// - [id] - The ID of the document to create
-  /// - [createDoc] - The definition of how to create the document
+  /// - [doc] - The definition of how to create the document
   /// - [doNotifyListeners] - Whether to notify listeners of the change
   ///
   /// Returns a [TurboResponse] with the created document reference
   @protected
   Future<TurboResponse<T>> createDoc({
     Transaction? transaction,
-    required CreateDocDef<T> createDoc,
+    required CreateDocDef<T> doc,
     bool doNotifyListeners = true,
   }) async {
     Completer? completer;
     try {
       final pDoc = createLocalDoc(
-        createDoc: createDoc,
+        doc: doc,
         doNotifyListeners: doNotifyListeners,
       );
       log.debug('Creating doc with id: ${pDoc.id}');
@@ -400,7 +400,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   /// Parameters:
   /// - [transaction] - Optional transaction for atomic operations
   /// - [ids] - The IDs of the documents to update
-  /// - [updateDoc] - The definition of how to update the documents
+  /// - [doc] - The definition of how to update the documents
   /// - [doNotifyListeners] - Whether to notify listeners of the changes
   ///
   /// Returns a [TurboResponse] indicating success or failure
@@ -408,7 +408,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   Future<TurboResponse<List<T>>> updateDocs({
     Transaction? transaction,
     required List<String> ids,
-    required UpdateDocDef<T> updateDoc,
+    required UpdateDocDef<T> doc,
     bool doNotifyListeners = true,
   }) async {
     Completer? completer;
@@ -416,7 +416,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
       log.debug('Updating ${ids.length} docs');
       final pDocs = updateLocalDocs(
         ids: ids,
-        updateDoc: updateDoc,
+        doc: doc,
         doNotifyListeners: doNotifyListeners,
       );
       if (transaction != null) {
@@ -465,20 +465,20 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   /// Parameters:
   /// - [transaction] - Optional transaction for atomic operations
   /// - [ids] - The IDs of the documents to create
-  /// - [createDoc] - The definition of how to create the documents
+  /// - [doc] - The definition of how to create the documents
   /// - [doNotifyListeners] - Whether to notify listeners of the changes
   ///
   /// Returns a [TurboResponse] indicating success or failure
   @protected
   Future<TurboResponse<List<T>>> createDocs({
     Transaction? transaction,
-    required List<CreateDocDef<T>> createDocs,
+    required List<CreateDocDef<T>> docs,
     bool doNotifyListeners = true,
   }) async {
     Completer? completer;
     try {
       final pDocs = createLocalDocs(
-        createDocs: createDocs,
+        docs: docs,
         doNotifyListeners: doNotifyListeners,
       );
       log.debug('Creating ${pDocs.length} docs');

@@ -230,7 +230,8 @@ class TurboFirestoreApi<T> {
   WriteBatch get writeBatch => _firebaseFirestore.batch();
 
   /// The current collection
-  CollectionReference get collection => _firebaseFirestore.collection(_collectionPath());
+  CollectionReference get collection =>
+      _firebaseFirestore.collection(_collectionPath());
 
   /// A new document
   DocumentReference get doc => collection.doc();
@@ -249,7 +250,8 @@ class TurboFirestoreApi<T> {
       'therefore, you must specify the collectionPathOverride containing all parent collection and document ids '
       'in order to make this method work.',
     );
-    final docRef = getDocRefById(id: id, collectionPathOverride: collectionPathOverride);
+    final docRef =
+        getDocRefById(id: id, collectionPathOverride: collectionPathOverride);
     _log.debug(
       message: 'Checking if document exists..',
       sensitiveData: SensitiveData(

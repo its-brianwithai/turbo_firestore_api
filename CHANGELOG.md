@@ -1,3 +1,8 @@
+## 🚀 Version 0.4.1 (January 2024)
+
+* **🛠️ Improvement:** Made `TurboAuthVars.userId` non-nullable for better type safety (defaults to `kValuesNoAuthId`)
+* **🛠️ Improvement:** Added `UpdateDocDef` type definition export
+
 ## 🚀 Version 0.4.0 (January 2024)
 
 * **💔 Breaking:** Renamed `createDoc` and `updateDoc` named parameter names to doc.

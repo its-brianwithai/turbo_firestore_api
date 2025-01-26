@@ -8,6 +8,7 @@ import 'package:loglytics/loglytics.dart';
 import 'package:turbo_firestore_api/abstracts/turbo_writeable.dart';
 import 'package:turbo_firestore_api/abstracts/turbo_writeable_id.dart';
 import 'package:turbo_firestore_api/apis/turbo_firestore_api.dart';
+import 'package:turbo_firestore_api/constants/k_values.dart';
 import 'package:turbo_firestore_api/models/turbo_auth_vars.dart';
 import 'package:turbo_firestore_api/services/turbo_auth_sync_service.dart';
 import 'package:turbo_firestore_api/typedefs/turbo_locator_def.dart';
@@ -35,7 +36,8 @@ part 'af_sync_turbo_document_service.dart';
 /// - [T] - The document type, must extend [TurboWriteableId<String>]
 /// - [API] - The Firestore API type, must extend [TurboFirestoreApi<T>]
 abstract class TurboDocumentService<T extends TurboWriteableId<String>,
-    API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<T?> with Loglytics {
+        API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<T?>
+    with Loglytics {
   /// Creates a new [TurboDocumentService] instance.
   ///
   /// Parameters:
@@ -112,8 +114,9 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   // 🎩 STATE --------------------------------------------------------------------------------- \\
 
   /// Local state for the document.
-  late final _doc =
-      Informer<T?>(initialValueLocator?.call() ?? defaultValueLocator?.call(), forceUpdate: true);
+  late final _doc = Informer<T?>(
+      initialValueLocator?.call() ?? defaultValueLocator?.call(),
+      forceUpdate: true);
 
   /// Completer that resolves when the service is ready.
   final _isReady = Completer();
@@ -126,7 +129,7 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
     return TurboAuthVars(
       id: id ?? api.genId,
       now: DateTime.now(),
-      userId: cachedUserId,
+      userId: cachedUserId ?? kValuesNoAuthId,
     ) as V;
   }
 

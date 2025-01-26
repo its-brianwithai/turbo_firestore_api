@@ -7,6 +7,7 @@ import 'package:loglytics/loglytics.dart';
 import 'package:turbo_firestore_api/abstracts/turbo_writeable.dart';
 import 'package:turbo_firestore_api/abstracts/turbo_writeable_id.dart';
 import 'package:turbo_firestore_api/apis/turbo_firestore_api.dart';
+import 'package:turbo_firestore_api/constants/k_values.dart';
 import 'package:turbo_firestore_api/extensions/completer_extension.dart';
 import 'package:turbo_firestore_api/models/turbo_auth_vars.dart';
 import 'package:turbo_firestore_api/typedefs/create_doc_def.dart';
@@ -56,7 +57,8 @@ part 'before_after_sync_turbo_collection_service.dart';
 /// - Error handling and logging
 /// - User authentication state synchronization
 abstract class TurboCollectionService<T extends TurboWriteableId<String>,
-    API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<List<T>> with Loglytics {
+        API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<List<T>>
+    with Loglytics {
   /// Creates a new [TurboCollectionService] instance.
   ///
   /// Parameters:
@@ -128,7 +130,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   V turboVars<V extends TurboAuthVars>({String? id}) => TurboAuthVars(
         id: id ?? api.genId,
         now: DateTime.now(),
-        userId: cachedUserId,
+        userId: cachedUserId ?? kValuesNoAuthId,
       ) as V;
 
   /// Value listenable for the document collection state.

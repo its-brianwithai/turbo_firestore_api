@@ -155,7 +155,9 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   ValueListenable<T?> get doc => _doc;
 
   /// Whether a document exists in local state.
-  bool get hasDoc => _doc.value != null;
+
+  /// The document ID.
+  String? get id => _doc.value?.id;
 
   // 🏗️ HELPERS ------------------------------------------------------------------------------- \\
   // ⚙️ LOCAL MUTATORS ------------------------------------------------------------------------ \\

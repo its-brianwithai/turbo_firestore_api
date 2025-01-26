@@ -1,3 +1,7 @@
+## 🚀 Version 0.4.2 (January 2024)
+
+* **🛠️ Improvement:** Add id getter.
+
 ## 🚀 Version 0.4.1 (January 2024)
 
 * **🛠️ Improvement:** Made `TurboAuthVars.userId` non-nullable for better type safety (defaults to `kValuesNoAuthId`)

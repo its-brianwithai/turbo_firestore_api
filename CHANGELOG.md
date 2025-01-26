@@ -1,18 +1,24 @@
-## 0.3.0
+## 🚀 Version 0.3.0 (January 2024)
+---
+### 💔 Breaking:
+* Renamed `vars()` to `turboVars()` for better clarity and consistency
+* Renamed batch operation methods for better clarity:
+    * `createDocs()` -> `createDocInBatch()`
+    * `deleteDocs()` -> `deleteDocInBatch()`
+    * `updateDocs()` -> `updateDocInBatch()`
+* Updated method signatures to use new type definitions (`CreateDocDef<T>`, `UpdateDocDef<T>`)
 
-* **🔄 Change:** Renamed `vars()` to `turboVars()` for better clarity and consistency
-* **🔄 Change:** Renamed batch operation methods for better clarity:
-  * `createDocs()` -> `createDocInBatch()`
-  * `deleteDocs()` -> `deleteDocInBatch()`
-  * `updateDocs()` -> `updateDocInBatch()`
-* **✨ New:** Added sync service implementations:
-  * `AfSyncTurboDocumentService` - After sync notifications
-  * `BeAfSyncTurboDocumentService` - Before and after sync notifications
-  * `BeSyncTurboDocumentService` - Before sync notifications
-* **✨ New:** Added type definitions for document operations:
-  * `CreateDocDef<T>` - Type definition for document creation functions
-  * `UpdateDocDef<T>` - Type definition for document update functions
-* **🔧 Fix:** Improved temporary block notify in sync services for better state management
+### ✨ Features:
+* Added sync service implementations:
+    * `AfSyncTurboDocumentService` - After sync notifications
+    * `BeAfSyncTurboDocumentService` - Before and after sync notifications
+    * `BeSyncTurboDocumentService` - Before sync notifications
+* Added type definitions for document operations:
+    * `CreateDocDef<T>` - Type definition for document creation functions
+    * `UpdateDocDef<T>` - Type definition for document update functions
+
+### 🛠️ Improvements:
+* Improved temporary block notify in sync services for better state management
 
 ## 0.2.0
 

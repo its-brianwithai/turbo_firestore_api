@@ -53,18 +53,38 @@ final api = TurboFirestoreApi<User>(
 class UsersService extends TurboCollectionService<User, UsersApi> {
   UsersService({required super.api});
   
-  Future<TurboResponse<DocumentReference>> createUser({
+  Future<TurboResponse<T>> createUser({
     required String name,
     required int age,
   }) async {
-    final user = UserDto.defaultValue(
-      id: api.genId,
-      userId: currentUser.id,
-      name: name,
-      age: age,
+    return createDoc(
+      createDoc: (vars) => UserDto(
+        id: vars.id,
+        userId: vars.userId,
+        name: name,
+        age: age,
+        createdAt: vars.now,
+        updatedAt: vars.now,
+      ),
     );
-    
-    return createDoc(doc: user);
+  }
+
+  Future<TurboResponse<T>> updateUser({
+    required String id,
+    String? name,
+    int? age,
+  }) async {
+    return updateDoc(
+      id: id,
+      updateDoc: (current, vars) => UserDto(
+        id: current.id,
+        userId: current.userId,
+        name: name ?? current.name,
+        age: age ?? current.age,
+        createdAt: current.createdAt,
+        updatedAt: vars.now,
+      ),
+    );
   }
 }
 ```
@@ -197,7 +217,15 @@ final api = TurboFirestoreApi<User>(
 );
 
 // Validation happens automatically during create/update operations
-final response = await api.createDoc(doc: user);
+final response = await api.createDoc(
+  createDoc: (vars) => User(
+    id: vars.id,
+    userId: vars.userId,
+    name: 'John',
+    age: 30,
+    createdAt: vars.now,
+  ),
+);
 
 response.fold(
   ifSuccess: (documentReference) {
@@ -965,7 +993,6 @@ class UserSearchView extends StatelessWidget {
                     children: user.skills.map((skill) => 
                       Chip(label: Text(skill))
                     ).toList(),
-                  ),
                 );
               },
             );
@@ -1240,72 +1267,6 @@ Key features of TurboResponse error handling:
    - Provide success/error notifications
    - Handle navigation after operations
 
-# Batch Operations
-
-```dart
-// Create multiple documents in a batch
-final batch = firestore.batch();
-final response = await api.createDocInBatch(
-  writeable: user,
-  writeBatch: batch,
-);
-
-// Update multiple documents in a batch
-final updateResponse = await api.updateDocInBatch(
-  writeable: updatedUser,
-  writeBatch: batch,
-);
-
-// Delete multiple documents in a batch
-final deleteResponse = await api.deleteDocInBatch(
-  id: userId,
-  writeBatch: batch,
-);
-```
-
-# Advanced Features
-
-## Sync Services
-
-Turbo Firestore API provides three types of sync services for documents:
-
-```dart
-// After-sync notifications
-class UserDocumentService extends AfSyncTurboDocumentService<User, UserApi> {
-  UserDocumentService({required super.api});
-
-  @override
-  void afterSyncNotifyUpdate(User? doc) {
-    // Handle document updates after sync
-  }
-}
-
-// Before-sync notifications
-class ProductDocumentService extends BeSyncTurboDocumentService<Product, ProductApi> {
-  ProductDocumentService({required super.api});
-
-  @override
-  void beforeSyncNotifyUpdate(Product? doc) {
-    // Handle document updates before sync
-  }
-}
-
-// Before and after sync notifications
-class OrderDocumentService extends BeAfSyncTurboDocumentService<Order, OrderApi> {
-  OrderDocumentService({required super.api});
-
-  @override
-  void beforeSyncNotifyUpdate(Order? doc) {
-    // Handle document updates before sync
-  }
-
-  @override
-  void afterSyncNotifyUpdate(Order? doc) {
-    // Handle document updates after sync
-  }
-}
-```
-
 ## Batch Operations
 
 ```dart
@@ -1373,6 +1334,87 @@ class UsersService extends TurboCollectionService<User, UsersApi> {
         lastUpdatedBy: vars.userId, // Current user's ID
       ),
     );
+  }
+}
+```
+
+## Sync Services
+
+Turbo Firestore API provides three types of sync services for documents:
+
+```dart
+// After-sync notifications
+class UserDocumentService extends AfSyncTurboDocumentService<User, UserApi> {
+  UserDocumentService({required super.api});
+
+  Future<TurboResponse<T>> updateUserName(String id, String newName) {
+    return updateDoc(
+      id: id,
+      updateDoc: (current, vars) => User(
+        id: current.id,
+        userId: current.userId,
+        name: newName,
+        age: current.age,
+        createdAt: current.createdAt,
+        updatedAt: vars.now,
+      ),
+    );
+  }
+
+  @override
+  void afterSyncNotifyUpdate(User? doc) {
+    // Handle document updates after sync
+  }
+}
+
+// Before-sync notifications
+class ProductDocumentService extends BeSyncTurboDocumentService<Product, ProductApi> {
+  ProductDocumentService({required super.api});
+
+  Future<TurboResponse<T>> createProduct(String name, double price) {
+    return createDoc(
+      createDoc: (vars) => Product(
+        id: vars.id,
+        userId: vars.userId,
+        name: name,
+        price: price,
+        createdAt: vars.now,
+      ),
+    );
+  }
+
+  @override
+  void beforeSyncNotifyUpdate(Product? doc) {
+    // Handle document updates before sync
+  }
+}
+
+// Before and after sync notifications
+class OrderDocumentService extends BeAfSyncTurboDocumentService<Order, OrderApi> {
+  OrderDocumentService({required super.api});
+
+  Future<TurboResponse<T>> updateOrderStatus(String id, OrderStatus status) {
+    return updateDoc(
+      id: id,
+      updateDoc: (current, vars) => Order(
+        id: current.id,
+        userId: current.userId,
+        items: current.items,
+        status: status,
+        createdAt: current.createdAt,
+        updatedAt: vars.now,
+      ),
+    );
+  }
+
+  @override
+  void beforeSyncNotifyUpdate(Order? doc) {
+    // Handle document updates before sync
+  }
+
+  @override
+  void afterSyncNotifyUpdate(Order? doc) {
+    // Handle document updates after sync
   }
 }
 ```

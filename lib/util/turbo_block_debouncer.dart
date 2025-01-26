@@ -57,8 +57,7 @@ class TurboBlockDebouncer with Loglytics {
   /// Uses mutex locking to safely manage concurrent access to the futures list.
   /// All futures are executed with a timeout specified by [kDurationsTimeout].
   void onChanged([Future? future]) {
-    log.debug(
-        'TurboBlockDebouncer.onChanged called with future: ${future != null}');
+    log.debug('TurboBlockDebouncer.onChanged called with future: ${future != null}');
     _canContinue = false;
     if (future != null) {
       _mutex.lockAndRun(
@@ -102,8 +101,7 @@ class TurboBlockDebouncer with Loglytics {
           );
         }
         _canContinue = true;
-        log.debug(
-            'TurboBlockDebouncer processing complete, canContinue set to true');
+        log.debug('TurboBlockDebouncer processing complete, canContinue set to true');
       },
     );
   }

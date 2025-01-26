@@ -52,9 +52,9 @@ extension TurboFirestoreDeleteApi<T> on TurboFirestoreApi<T> {
   /// ```
   ///
   /// See also:
-  /// [deleteDocs] batch deletion
+  /// [deleteDocInBatch] batch deletion
   /// [updateDoc] document updates
-  Future<TurboResponse<void>> deleteDoc({
+  Future<TurboResponse> deleteDoc({
     required String id,
     WriteBatch? writeBatch,
     String? collectionPathOverride,
@@ -80,7 +80,7 @@ extension TurboFirestoreDeleteApi<T> on TurboFirestoreApi<T> {
           message: 'WriteBatch was not null! Deleting with batch..',
           sensitiveData: null,
         );
-        final lastBatchResponse = await deleteDocs(
+        final lastBatchResponse = await deleteDocInBatch(
           id: id,
           writeBatch: writeBatch,
           collectionPathOverride: collectionPathOverride,
@@ -100,16 +100,14 @@ extension TurboFirestoreDeleteApi<T> on TurboFirestoreApi<T> {
             message: 'Committing writeBatch done!',
             sensitiveData: null,
           );
-          return TurboResponse<void>.success(
-              result: null,
-              title: 'Success',
-              message: 'Document deleted successfully');
+          return TurboResponse.success(
+              result: null, title: 'Success', message: 'Document deleted successfully');
         } else {
           _log.error(
             message: 'Last batch failed!',
             sensitiveData: null,
           );
-          return TurboResponse<void>.fail(
+          return TurboResponse.fail(
               error: 'Failed to delete document',
               title: 'Error',
               message: 'Failed to delete document');
@@ -119,8 +117,8 @@ extension TurboFirestoreDeleteApi<T> on TurboFirestoreApi<T> {
           message: 'WriteBatch was null! Deleting without batch..',
           sensitiveData: null,
         );
-        final documentReference = getDocRefById(
-            id: id, collectionPathOverride: collectionPathOverride);
+        final documentReference =
+            getDocRefById(id: id, collectionPathOverride: collectionPathOverride);
         if (transaction == null) {
           _log.debug(
             message: 'Deleting data with documentReference.delete..',
@@ -134,10 +132,8 @@ extension TurboFirestoreDeleteApi<T> on TurboFirestoreApi<T> {
           message: 'Deleting data done!',
           sensitiveData: null,
         );
-        return TurboResponse<void>.success(
-            result: null,
-            title: 'Success',
-            message: 'Document deleted successfully');
+        return TurboResponse.success(
+            result: null, title: 'Success', message: 'Document deleted successfully');
       }
     } catch (error, stackTrace) {
       if (transaction != null) rethrow;
@@ -149,8 +145,7 @@ extension TurboFirestoreDeleteApi<T> on TurboFirestoreApi<T> {
           ),
           error: error,
           stackTrace: stackTrace);
-      return TurboResponse<void>.fail(
-          error: error, title: 'Error', message: 'Failed to delete document');
+      return TurboResponse.fail(error: error, title: 'Error', message: 'Failed to delete document');
     }
   }
 
@@ -177,7 +172,7 @@ extension TurboFirestoreDeleteApi<T> on TurboFirestoreApi<T> {
   /// Example:
   /// ```dart
   /// final batch = firestore.batch();
-  /// final response = await api.deleteDocs(
+  /// final response = await api.deleteDocInBatch(
   ///   id: 'user-123',
   ///   writeBatch: batch,
   /// );
@@ -192,9 +187,8 @@ extension TurboFirestoreDeleteApi<T> on TurboFirestoreApi<T> {
   ///
   /// See also:
   /// [deleteDoc] single document deletion
-  /// [updateDocs] batch updates
-  Future<TurboResponse<WriteBatchWithReference<Map<String, dynamic>>>>
-      deleteDocs({
+  /// [updateDocInBatch] batch updates
+  Future<TurboResponse<WriteBatchWithReference<Map<String, dynamic>>>> deleteDocInBatch({
     required String id,
     WriteBatch? writeBatch,
     String? collectionPathOverride,
@@ -223,8 +217,7 @@ extension TurboFirestoreDeleteApi<T> on TurboFirestoreApi<T> {
       );
       nullSafeWriteBatch.delete(documentReference);
       _log.info(
-        message:
-            'Adding delete to batch done! Returning WriteBatchWithReference..',
+        message: 'Adding delete to batch done! Returning WriteBatchWithReference..',
         sensitiveData: null,
       );
       return TurboResponse.success(

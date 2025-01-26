@@ -78,8 +78,7 @@ export 'mixins/turbo_exception_handler.dart';
 
 /// Type definitions
 export 'typedefs/collection_reference_def.dart';
-export 'typedefs/id_locator_def.dart';
-export 'typedefs/turbo_doc_builder.dart';
+export 'typedefs/create_doc_def.dart';
 export 'typedefs/turbo_locator_def.dart';
 
 /// Constants

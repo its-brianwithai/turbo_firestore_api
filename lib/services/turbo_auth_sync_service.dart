@@ -69,8 +69,7 @@ abstract class TurboAuthSyncService<StreamValue> with TurboExceptionHandler {
         },
       );
     } catch (error, stack) {
-      _log.error('Stream error occurred while setting up stream!',
-          error: error, stackTrace: stack);
+      _log.error('Stream error occurred while setting up stream!', error: error, stackTrace: stack);
       _tryRetry();
     }
   }
@@ -111,7 +110,7 @@ abstract class TurboAuthSyncService<StreamValue> with TurboExceptionHandler {
   /// Logger instance for this service.
   late final _log = Log(location: runtimeType.toString());
 
-  /// Debouncer for blocking stream updates.
+  /// Debouncer for blocking stream notifies.
   final _blockDebouncer = TurboBlockDebouncer(duration: Duration(seconds: 2));
 
   // 🧲 FETCHERS ------------------------------------------------------------------------------ \\
@@ -134,15 +133,18 @@ abstract class TurboAuthSyncService<StreamValue> with TurboExceptionHandler {
   FutureOr<void> Function(User user)? onAuth;
 
   /// Whether stream updates are currently blocked.
-  bool get canSync => _blockDebouncer.canContinue;
+  bool get canNotifyListeners => _blockDebouncer.canContinue;
 
   // 🪄 MUTATORS ------------------------------------------------------------------------------ \\
 
-  /// Temporarily blocks stream updates.
-  void tempBlockStreamUpdates([Future? future]) =>
-      _blockDebouncer.onChanged(future);
+  /// Temporarily blocks stream notifies.
+  Completer tempBlockLocalNotify() {
+    final completer = Completer();
+    _blockDebouncer.onChanged(completer.future);
+    return completer;
+  }
 
-  /// Resets and reinitializes the stream.
+  /// Resets and reinitialized the stream.
   Future<void> resetAndTryInitialiseStream() async {
     await _resetStream();
     await tryInitialiseStream();

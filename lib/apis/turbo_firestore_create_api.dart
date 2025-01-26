@@ -66,7 +66,7 @@ extension TurboFirestoreCreateApi<T> on TurboFirestoreApi {
   /// ```
   ///
   /// See also:
-  /// - [createDocs] for batch operations
+  /// - [createDocInBatch] for batch operations
   /// - [TurboTimestampType] for timestamp options
   Future<TurboResponse<DocumentReference>> createDoc({
     required TurboWriteable writeable,
@@ -116,7 +116,7 @@ extension TurboFirestoreCreateApi<T> on TurboFirestoreApi {
         _log.debug(
             message: 'WriteBatch was not null! Creating with batch..',
             sensitiveData: null);
-        final lastBatchResponse = await createDocs(
+        final lastBatchResponse = await createDocInBatch(
           writeable: writeable,
           id: id,
           writeBatch: writeBatch,
@@ -247,7 +247,7 @@ extension TurboFirestoreCreateApi<T> on TurboFirestoreApi {
   /// final batch = firestore.batch();
   /// final user = User(name: 'John');
   ///
-  /// final response = await api.createDocs(
+  /// final response = await api.createDocInBatch(
   ///   writeable: user,
   ///   writeBatch: batch,
   ///   merge: true,
@@ -268,7 +268,7 @@ extension TurboFirestoreCreateApi<T> on TurboFirestoreApi {
   /// - [createDoc] for single document operations
   /// - [WriteBatchWithReference] for batch result structure
   Future<TurboResponse<WriteBatchWithReference<Map<String, dynamic>>>>
-      createDocs({
+      createDocInBatch({
     required TurboWriteable writeable,
     String? id,
     WriteBatch? writeBatch,

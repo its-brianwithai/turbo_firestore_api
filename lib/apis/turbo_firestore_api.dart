@@ -219,7 +219,7 @@ class TurboFirestoreApi<T> {
   // 🧲 FETCHERS ------------------------------------------------------------------------------ \\
 
   /// Returns a new instance of [V] with basic variables filled in.
-  V vars<V extends TurboApiVars>() {
+  V turboVars<V extends TurboApiVars>() {
     return TurboApiVars(
       id: genId,
       now: DateTime.now(),

@@ -478,7 +478,7 @@ class UsersService extends TurboCollectionService<User, UsersApi> {
     // 2. Stream updates are blocked
     // 3. Remote update executes
     // 4. Stream unblocks after completion
-    return updateDocs(
+    return updateDocInBatch(
       docs: updatedUsers,
       doNotifyListeners: true,
     );
@@ -598,7 +598,7 @@ class UsersService extends TurboCollectionService<User, UsersApi> {
     // 3. All updates are added to a batch
     // 4. Batch is committed atomically
     // 5. Stream unblocks after completion
-    return updateDocs(
+    return updateDocInBatch(
       docs: deactivatedUsers,
       doNotifyListeners: true,
     );
@@ -626,42 +626,22 @@ class UsersService extends TurboCollectionService<User, UsersApi> {
     required User toUser,
     required int points,
   }) async {
-    final updatedFromUser = User(
-      id: fromUser.id,
-      documentReference: fromUser.documentReference,
-      name: fromUser.name,
-      points: fromUser.points - points,
+    final updatedUsers = users.map((user) => User(
+      id: user.id,
+      documentReference: user.documentReference,
+      name: user.name,
+      age: newAge,
+    )).toList();
+
+    // During this batch update:
+    // 1. Local state updates immediately
+    // 2. Stream updates are blocked
+    // 3. Remote update executes
+    // 4. Stream unblocks after completion
+    return updateDocInBatch(
+      docs: updatedUsers,
+      doNotifyListeners: true,
     );
-
-    final updatedToUser = User(
-      id: toUser.id,
-      documentReference: toUser.documentReference,
-      name: toUser.name,
-      points: toUser.points + points,
-    );
-
-    // In transactions, methods automatically throw on failure to abort the transaction
-    return api.runTransaction((transaction) async {
-      // Example of throwing inside transaction based on a condition
-      if (fromUser.points < points) {
-        TurboResponse.throwException(
-          error: 'Insufficient points',
-          message: 'User does not have enough points for transfer',
-        );
-      }
-
-      await updateDoc(
-        doc: updatedFromUser,
-        transaction: transaction,
-      );
-
-      await updateDoc(
-        doc: updatedToUser,
-        transaction: transaction,
-      );
-
-      return TurboResponse.emptySuccess();
-    });
   }
 }
 ```
@@ -808,6 +788,7 @@ class ActiveUsersView extends StatelessWidget {
     );
   }
 }
+
 
 // View model for handling user interactions
 class UsersViewModel extends ChangeNotifier {
@@ -1174,42 +1155,22 @@ class UsersService extends TurboCollectionService<User, UsersApi> {
     required User toUser,
     required int points,
   }) async {
-    final updatedFromUser = User(
-      id: fromUser.id,
-      documentReference: fromUser.documentReference,
-      name: fromUser.name,
-      points: fromUser.points - points,
+    final updatedUsers = users.map((user) => User(
+      id: user.id,
+      documentReference: user.documentReference,
+      name: user.name,
+      age: newAge,
+    )).toList();
+
+    // During this batch update:
+    // 1. Local state updates immediately
+    // 2. Stream updates are blocked
+    // 3. Remote update executes
+    // 4. Stream unblocks after completion
+    return updateDocInBatch(
+      docs: updatedUsers,
+      doNotifyListeners: true,
     );
-
-    final updatedToUser = User(
-      id: toUser.id,
-      documentReference: toUser.documentReference,
-      name: toUser.name,
-      points: toUser.points + points,
-    );
-
-    // In transactions, methods automatically throw on failure to abort the transaction
-    return api.runTransaction((transaction) async {
-      // Example of throwing inside transaction based on a condition
-      if (fromUser.points < points) {
-        TurboResponse.throwException(
-          error: 'Insufficient points',
-          message: 'User does not have enough points for transfer',
-        );
-      }
-
-      await updateDoc(
-        doc: updatedFromUser,
-        transaction: transaction,
-      );
-
-      await updateDoc(
-        doc: updatedToUser,
-        transaction: transaction,
-      );
-
-      return TurboResponse.emptySuccess();
-    });
   }
 }
 
@@ -1286,3 +1247,140 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## 📄 License
 
 This project is licensed under the [LICENSE](LICENSE) file in the root directory of this repository.
+
+# Batch Operations
+
+```dart
+// Create multiple documents in a batch
+final batch = firestore.batch();
+final response = await api.createDocInBatch(
+  writeable: user,
+  writeBatch: batch,
+);
+
+// Update multiple documents in a batch
+final updateResponse = await api.updateDocInBatch(
+  writeable: updatedUser,
+  writeBatch: batch,
+);
+
+// Delete multiple documents in a batch
+final deleteResponse = await api.deleteDocInBatch(
+  id: userId,
+  writeBatch: batch,
+);
+```
+
+# Advanced Features
+
+## Sync Services
+
+Turbo Firestore API provides three types of sync services for documents:
+
+```dart
+// After-sync notifications
+class UserDocumentService extends AfSyncTurboDocumentService<User, UserApi> {
+  UserDocumentService({required super.api});
+
+  @override
+  void afterSyncNotifyUpdate(User? doc) {
+    // Handle document updates after sync
+  }
+}
+
+// Before-sync notifications
+class ProductDocumentService extends BeSyncTurboDocumentService<Product, ProductApi> {
+  ProductDocumentService({required super.api});
+
+  @override
+  void beforeSyncNotifyUpdate(Product? doc) {
+    // Handle document updates before sync
+  }
+}
+
+// Before and after sync notifications
+class OrderDocumentService extends BeAfSyncTurboDocumentService<Order, OrderApi> {
+  OrderDocumentService({required super.api});
+
+  @override
+  void beforeSyncNotifyUpdate(Order? doc) {
+    // Handle document updates before sync
+  }
+
+  @override
+  void afterSyncNotifyUpdate(Order? doc) {
+    // Handle document updates after sync
+  }
+}
+```
+
+## Batch Operations
+
+```dart
+// Create multiple documents in a batch
+final batch = firestore.batch();
+final response = await api.createDocInBatch(
+  writeable: user,
+  writeBatch: batch,
+);
+
+// Update multiple documents in a batch
+final updateResponse = await api.updateDocInBatch(
+  writeable: updatedUser,
+  writeBatch: batch,
+);
+
+// Delete multiple documents in a batch
+final deleteResponse = await api.deleteDocInBatch(
+  id: userId,
+  writeBatch: batch,
+);
+```
+
+## Type Definitions
+
+Turbo Firestore API provides type-safe definitions for document operations that automatically handle common fields like IDs, timestamps, and user IDs:
+
+```dart
+// Type definition for document creation
+typedef CreateDocDef<T> = T Function(TurboAuthVars vars);
+// Type definition for document updates
+typedef UpdateDocDef<T> = T Function(T current, TurboAuthVars vars);
+
+// Example usage in a service
+class UsersService extends TurboCollectionService<User, UsersApi> {
+  UsersService({required super.api});
+
+  /// Creates a new user with automatic ID, timestamp and user ID
+  Future<TurboResponse<User>> createUser({
+    required String name,
+    required int age,
+  }) {
+    return createDoc(
+      createDoc: (vars) => User(
+        id: vars.id,           // Auto-generated ID
+        createdAt: vars.now,   // Current timestamp
+        createdBy: vars.userId,// Current user's ID
+        name: name,
+        age: age,
+      ),
+    );
+  }
+
+  /// Updates user's last active timestamp
+  Future<TurboResponse<User>> updateLastActive(String userId) {
+    return updateDoc(
+      id: userId,
+      updateDoc: (current, vars) => User(
+        id: current.id,
+        createdAt: current.createdAt,
+        createdBy: current.createdBy,
+        name: current.name,
+        age: current.age,
+        lastActiveAt: vars.now,     // Current timestamp
+        lastUpdatedBy: vars.userId, // Current user's ID
+      ),
+    );
+  }
+}
+```

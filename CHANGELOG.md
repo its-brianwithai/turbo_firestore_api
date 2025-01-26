@@ -1,3 +1,19 @@
+## 0.3.0
+
+* **🔄 Change:** Renamed `vars()` to `turboVars()` for better clarity and consistency
+* **🔄 Change:** Renamed batch operation methods for better clarity:
+  * `createDocs()` -> `createDocInBatch()`
+  * `deleteDocs()` -> `deleteDocInBatch()`
+  * `updateDocs()` -> `updateDocInBatch()`
+* **✨ New:** Added sync service implementations:
+  * `AfSyncTurboDocumentService` - After sync notifications
+  * `BeAfSyncTurboDocumentService` - Before and after sync notifications
+  * `BeSyncTurboDocumentService` - Before sync notifications
+* **✨ New:** Added type definitions for document operations:
+  * `CreateDocDef<T>` - Type definition for document creation functions
+  * `UpdateDocDef<T>` - Type definition for document update functions
+* **🔧 Fix:** Improved temporary block notify in sync services for better state management
+
 ## 0.2.0
 
 * **⚠️ Breaking:** Updated dependencies to latest versions.

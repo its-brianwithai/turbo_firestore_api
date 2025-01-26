@@ -8,10 +8,10 @@ part of 'turbo_collection_service.dart';
 /// Type Parameters:
 /// - [T] - The document type, must extend [TurboWriteableId<String>]
 /// - [API] - The Firestore API type, must extend [TurboFirestoreApi<T>]
-abstract class BeTurboCollectionService<T extends TurboWriteableId<String>,
+abstract class BeSyncTurboCollectionService<T extends TurboWriteableId<String>,
     API extends TurboFirestoreApi<T>> extends TurboCollectionService<T, API> {
-  /// Creates a new [BeTurboCollectionService] instance.
-  BeTurboCollectionService({required super.api});
+  /// Creates a new [BeSyncTurboCollectionService] instance.
+  BeSyncTurboCollectionService({required super.api});
 
   /// Called before the local state is updated with new data.
   ///
@@ -44,12 +44,19 @@ abstract class BeTurboCollectionService<T extends TurboWriteableId<String>,
       if (user != null) {
         log.debug('Updating docs for user ${user.uid}');
         beforeSyncNotifyUpdate(docs);
-        _docsPerId.update(docs.toIdMap((element) => element.id));
+        _docsPerId.update(
+          docs.toIdMap((element) => element.id),
+          doNotifyListeners: canNotifyListeners,
+        );
         _isReady.completeIfNotComplete();
         log.debug('Updated ${docs.length} docs');
       } else {
         log.debug('User is null, clearing docs');
-        _docsPerId.update({});
+        beforeSyncNotifyUpdate([]);
+        _docsPerId.update(
+          {},
+          doNotifyListeners: canNotifyListeners,
+        );
       }
     };
   }

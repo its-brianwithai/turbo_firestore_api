@@ -1240,14 +1240,6 @@ Key features of TurboResponse error handling:
    - Provide success/error notifications
    - Handle navigation after operations
 
-## 🧩 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is licensed under the [LICENSE](LICENSE) file in the root directory of this repository.
-
 # Batch Operations
 
 ```dart
@@ -1384,3 +1376,11 @@ class UsersService extends TurboCollectionService<User, UsersApi> {
   }
 }
 ```
+
+## 🧩 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the [LICENSE](LICENSE) file in the root directory of this repository.

@@ -57,7 +57,6 @@ abstract class BeAfSyncTurboCollectionService<
         beforeSyncNotifyUpdate(docs);
         _docsPerId.update(
           docs.toIdMap((element) => element.id),
-          doNotifyListeners: canNotifyListeners,
         );
         _isReady.completeIfNotComplete();
         afterSyncNotifyUpdate(docs);
@@ -67,7 +66,6 @@ abstract class BeAfSyncTurboCollectionService<
         beforeSyncNotifyUpdate([]);
         _docsPerId.update(
           {},
-          doNotifyListeners: canNotifyListeners,
         );
         afterSyncNotifyUpdate([]);
       }

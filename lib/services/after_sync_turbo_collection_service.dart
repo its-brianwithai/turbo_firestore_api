@@ -45,7 +45,6 @@ abstract class AfSyncTurboCollectionService<T extends TurboWriteableId<String>,
         log.debug('Updating docs for user ${user.uid}');
         _docsPerId.update(
           docs.toIdMap((element) => element.id),
-          doNotifyListeners: canNotifyListeners,
         );
         _isReady.completeIfNotComplete();
         afterSyncNotifyUpdate(docs);
@@ -54,7 +53,6 @@ abstract class AfSyncTurboCollectionService<T extends TurboWriteableId<String>,
         log.debug('User is null, clearing docs');
         _docsPerId.update(
           {},
-          doNotifyListeners: canNotifyListeners,
         );
         afterSyncNotifyUpdate([]);
       }

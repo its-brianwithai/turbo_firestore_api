@@ -46,7 +46,6 @@ abstract class BeSyncTurboCollectionService<T extends TurboWriteableId<String>,
         beforeSyncNotifyUpdate(docs);
         _docsPerId.update(
           docs.toIdMap((element) => element.id),
-          doNotifyListeners: canNotifyListeners,
         );
         _isReady.completeIfNotComplete();
         log.debug('Updated ${docs.length} docs');
@@ -55,7 +54,6 @@ abstract class BeSyncTurboCollectionService<T extends TurboWriteableId<String>,
         beforeSyncNotifyUpdate([]);
         _docsPerId.update(
           {},
-          doNotifyListeners: canNotifyListeners,
         );
       }
     };

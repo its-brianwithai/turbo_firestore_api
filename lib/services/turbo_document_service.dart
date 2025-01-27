@@ -96,7 +96,6 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
         updateLocalDoc(
           id: value?.id,
           doc: (_, __) => value,
-          doNotifyListeners: canNotifyListeners,
         );
         _isReady.completeIfNotComplete();
         log.debug('Updated doc');
@@ -105,7 +104,6 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
         updateLocalDoc(
           id: null,
           doc: (_, __) => null,
-          doNotifyListeners: canNotifyListeners,
         );
       }
     };
@@ -250,7 +248,6 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
     bool doNotifyListeners = true,
     Transaction? transaction,
   }) async {
-    Completer? completer;
     try {
       log.debug('Deleting doc with id: $id');
       final doc = _doc.value;
@@ -265,7 +262,6 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
         id: id,
         transaction: transaction,
       );
-      completer = tempBlockLocalNotify();
       final turboResponse = await future;
       if (transaction != null) {
         turboResponse.throwWhenFail();
@@ -279,8 +275,6 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
         stackTrace: stackTrace,
       );
       return TurboResponse.fail(error: error);
-    } finally {
-      completer?.complete();
     }
   }
 
@@ -306,7 +300,6 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
     TurboWriteable Function(T doc)? remoteUpdateRequestBuilder,
     bool doNotifyListeners = true,
   }) async {
-    Completer? completer;
     try {
       log.debug('Updating doc with id: $id');
       final pDoc = updateLocalDoc(
@@ -322,7 +315,6 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
         id: id,
         transaction: transaction,
       );
-      completer = tempBlockLocalNotify();
       final turboResponse = await future;
       if (transaction != null) {
         turboResponse.throwWhenFail();
@@ -336,8 +328,6 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
         stackTrace: stackTrace,
       );
       return TurboResponse.fail(error: error);
-    } finally {
-      completer?.complete();
     }
   }
 
@@ -360,7 +350,6 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
     required CreateDocDef<T> doc,
     bool doNotifyListeners = true,
   }) async {
-    Completer? completer;
     try {
       final pDoc = createLocalDoc(
         doc: doc,
@@ -372,7 +361,6 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
         id: pDoc.id,
         transaction: transaction,
       );
-      completer = tempBlockLocalNotify();
       final turboResponse = await future;
       if (transaction != null) {
         turboResponse.throwWhenFail();
@@ -386,8 +374,6 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
         stackTrace: stackTrace,
       );
       return TurboResponse.fail(error: error);
-    } finally {
-      completer?.complete();
     }
   }
 }

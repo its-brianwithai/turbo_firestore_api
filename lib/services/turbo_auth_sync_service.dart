@@ -5,7 +5,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:loglytics/loglytics.dart';
 import 'package:turbo_firestore_api/mixins/turbo_exception_handler.dart';
-import 'package:turbo_firestore_api/util/turbo_block_debouncer.dart';
 
 /// A service that synchronizes data with Firebase Authentication state changes.
 ///
@@ -111,9 +110,6 @@ abstract class TurboAuthSyncService<StreamValue> with TurboExceptionHandler {
   /// Logger instance for this service.
   late final _log = Log(location: runtimeType.toString());
 
-  /// Debouncer for blocking stream notifies.
-  final _blockDebouncer = TurboBlockDebouncer(duration: Duration(seconds: 2));
-
   // 🧲 FETCHERS ------------------------------------------------------------------------------ \\
   // 🏗️ HELPERS ------------------------------------------------------------------------------- \\
   // 🪄 MUTATORS ------------------------------------------------------------------------------ \\
@@ -133,17 +129,7 @@ abstract class TurboAuthSyncService<StreamValue> with TurboExceptionHandler {
   /// Called when a user is authenticated.
   FutureOr<void> Function(User user)? onAuth;
 
-  /// Whether stream updates are currently blocked.
-  bool get canNotifyListeners => _blockDebouncer.canContinue;
-
   // 🪄 MUTATORS ------------------------------------------------------------------------------ \\
-
-  /// Temporarily blocks stream notifies.
-  Completer tempBlockLocalNotify() {
-    final completer = Completer();
-    _blockDebouncer.onChanged(completer.future);
-    return completer;
-  }
 
   /// Resets and reinitialized the stream.
   Future<void> resetAndTryInitialiseStream() async {

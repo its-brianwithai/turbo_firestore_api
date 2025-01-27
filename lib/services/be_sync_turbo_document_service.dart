@@ -47,7 +47,6 @@ abstract class BeSyncTurboDocumentService<T extends TurboWriteableId<String>,
         updateLocalDoc(
           id: value?.id,
           doc: (_, __) => value,
-          doNotifyListeners: canNotifyListeners,
         );
         _isReady.completeIfNotComplete();
         log.debug('Updated doc');
@@ -57,7 +56,6 @@ abstract class BeSyncTurboDocumentService<T extends TurboWriteableId<String>,
         updateLocalDoc(
           id: null,
           doc: (_, __) => value,
-          doNotifyListeners: canNotifyListeners,
         );
       }
     };

@@ -1,3 +1,7 @@
+## 🚀 Version 0.5.0 (January 2024)
+
+* **💔 Breaking:** Removed `templateBlockNotify`.
+
 ## 🚀 Version 0.4.2 (January 2024)
 
 * **🛠️ Improvement:** Add id getter.

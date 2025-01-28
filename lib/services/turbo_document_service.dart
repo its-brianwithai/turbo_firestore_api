@@ -37,7 +37,7 @@ part 'af_sync_turbo_document_service.dart';
 /// - [T] - The document type, must extend [TurboWriteableId<String>]
 /// - [API] - The Firestore API type, must extend [TurboFirestoreApi<T>]
 abstract class TurboDocumentService<T extends TurboWriteableId<String>,
-        API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<T?>
+API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<T?>
     with Loglytics {
   /// Creates a new [TurboDocumentService] instance.
   ///
@@ -95,7 +95,7 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
       if (user != null) {
         log.debug('Updating doc for user ${user.uid}');
         if (value != null) {
-          updateLocalDoc(
+          upsertLocalDoc(
             id: value.id,
             doc: (current, _) => value,
           );

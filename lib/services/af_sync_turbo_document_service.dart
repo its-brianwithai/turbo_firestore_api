@@ -43,7 +43,7 @@ abstract class AfSyncTurboDocumentService<T extends TurboWriteableId<String>,
       if (user != null) {
         log.debug('Updating doc for user ${user.uid}');
         if (value != null) {
-          final pDoc = updateLocalDoc(
+          final pDoc = upsertLocalDoc(
             id: value.id,
             doc: (current, _) => value,
           );

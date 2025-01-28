@@ -44,7 +44,7 @@ abstract class BeSyncTurboDocumentService<T extends TurboWriteableId<String>,
         log.debug('Updating doc for user ${user.uid}');
         if (value != null) {
           beforeSyncNotifyUpdate(value);
-          updateLocalDoc(
+          upsertLocalDoc(
             id: value.id,
             doc: (current, _) => value,
           );

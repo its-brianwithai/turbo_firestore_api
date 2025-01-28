@@ -1,3 +1,8 @@
+## 🚀 Version 0.6.1 (January 2024)
+
+### 🛠️ Improvements:
+* Updated sync services to use `upsertLocalDoc` instead of `updateLocalDoc` for better consistency
+
 ## 🚀 Version 0.6.0 (January 2024)
 ---
 ### ✨ Features:

@@ -14,6 +14,7 @@ import 'package:turbo_firestore_api/services/turbo_auth_sync_service.dart';
 import 'package:turbo_firestore_api/typedefs/turbo_locator_def.dart';
 import 'package:turbo_firestore_api/typedefs/create_doc_def.dart';
 import 'package:turbo_firestore_api/typedefs/update_doc_def.dart';
+import 'package:turbo_firestore_api/typedefs/upsert_doc_def.dart';
 import 'package:turbo_response/turbo_response.dart';
 import '../extensions/completer_extension.dart';
 
@@ -93,18 +94,19 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
     return (value, user) {
       if (user != null) {
         log.debug('Updating doc for user ${user.uid}');
-        updateLocalDoc(
-          id: value?.id,
-          doc: (_, __) => value,
-        );
+        if (value != null) {
+          updateLocalDoc(
+            id: value.id,
+            doc: (current, _) => value,
+          );
+        } else {
+          _doc.update(null);
+        }
         _isReady.completeIfNotComplete();
         log.debug('Updated doc');
       } else {
         log.debug('User is null, clearing doc');
-        updateLocalDoc(
-          id: null,
-          doc: (_, __) => null,
-        );
+        _doc.update(null);
       }
     };
   }
@@ -208,16 +210,50 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   /// Updates an existing document in local state.
   ///
   /// Parameters:
-  /// - [doc] - The document to update
+  /// - [id] - The document ID
+  /// - [doc] - The document update function
   /// - [doNotifyListeners] - Whether to notify listeners of the change
   @protected
-  T? updateLocalDoc({
-    required String? id,
-    required NullableUpdateDocDef<T> doc,
+  T updateLocalDoc({
+    required String id,
+    required UpdateDocDef<T> doc,
+    bool doNotifyListeners = true,
+  }) {
+    if (_doc.value == null) {
+      throw StateError('Cannot update non-existent document');
+    }
+    final pDoc = doc(_doc.value!, turboVars(id: id));
+    log.debug('Updating local doc with id: ${pDoc.id}');
+    if (doNotifyListeners) {
+      beforeLocalNotifyUpdate?.call(pDoc);
+    }
+    _doc.update(pDoc, doNotifyListeners: doNotifyListeners);
+    if (doNotifyListeners) {
+      afterLocalNotifyUpdate?.call(pDoc);
+    }
+    return pDoc;
+  }
+
+  /// Upserts (updates or inserts) a document in local state.
+  ///
+  /// This method will either update an existing document or create a new one
+  /// if it doesn't exist. The [doc] function receives the current document
+  /// (or null if it doesn't exist) and should return the new document state.
+  ///
+  /// Parameters:
+  /// - [id] - The ID of the document to upsert
+  /// - [doc] - The definition of how to upsert the document
+  /// - [doNotifyListeners] - Whether to notify listeners of the change
+  ///
+  /// Returns the upserted document
+  @protected
+  T upsertLocalDoc({
+    required String id,
+    required UpsertDocDef<T> doc,
     bool doNotifyListeners = true,
   }) {
     final pDoc = doc(_doc.value, turboVars(id: id));
-    log.debug('Updating local doc with id: ${pDoc?.id}');
+    log.debug('Upserting local doc with id: $id');
     if (doNotifyListeners) {
       beforeLocalNotifyUpdate?.call(pDoc);
     }
@@ -296,7 +332,7 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
   Future<TurboResponse<T>> updateDoc({
     Transaction? transaction,
     required String id,
-    required NullableUpdateDocDef<T> doc,
+    required UpdateDocDef<T> doc,
     TurboWriteable Function(T doc)? remoteUpdateRequestBuilder,
     bool doNotifyListeners = true,
   }) async {
@@ -307,9 +343,6 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
         doc: doc,
         doNotifyListeners: doNotifyListeners,
       );
-      if (pDoc == null) {
-        return TurboResponse.fail(error: StateError('Document not found'));
-      }
       final future = api.updateDoc(
         writeable: remoteUpdateRequestBuilder?.call(pDoc) ?? pDoc,
         id: id,
@@ -370,6 +403,61 @@ abstract class TurboDocumentService<T extends TurboWriteableId<String>,
       if (transaction != null) rethrow;
       log.error(
         '$error caught while creating doc',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return TurboResponse.fail(error: error);
+    }
+  }
+
+  /// Upserts (updates or inserts) a document both locally and in Firestore.
+  ///
+  /// This method will either update an existing document or create a new one
+  /// if it doesn't exist. The [doc] function receives the current document
+  /// (or null if it doesn't exist) and should return the new document state.
+  ///
+  /// Performs an optimistic upsert by updating the local state first,
+  /// then syncing with Firestore. If the remote upsert fails, the local
+  /// state remains updated.
+  ///
+  /// Parameters:
+  /// - [transaction] - Optional transaction for atomic operations
+  /// - [id] - The ID of the document to upsert
+  /// - [doc] - The definition of how to upsert the document
+  /// - [remoteUpdateRequestBuilder] - Optional builder to modify the document before upserting
+  /// - [doNotifyListeners] - Whether to notify listeners of the change
+  ///
+  /// Returns a [TurboResponse] with the upserted document reference
+  @protected
+  Future<TurboResponse<T>> upsertDoc({
+    Transaction? transaction,
+    required String id,
+    required UpsertDocDef<T> doc,
+    TurboWriteable Function(T doc)? remoteUpdateRequestBuilder,
+    bool doNotifyListeners = true,
+  }) async {
+    try {
+      log.debug('Upserting doc with id: $id');
+      final pDoc = upsertLocalDoc(
+        id: id,
+        doc: doc,
+        doNotifyListeners: doNotifyListeners,
+      );
+      final future = api.createDoc(
+        writeable: remoteUpdateRequestBuilder?.call(pDoc) ?? pDoc,
+        id: id,
+        transaction: transaction,
+        merge: true,
+      );
+      final turboResponse = await future;
+      if (transaction != null) {
+        turboResponse.throwWhenFail();
+      }
+      return turboResponse.mapSuccess((_) => pDoc);
+    } catch (error, stackTrace) {
+      if (transaction != null) rethrow;
+      log.error(
+        '$error caught while upserting doc',
         error: error,
         stackTrace: stackTrace,
       );

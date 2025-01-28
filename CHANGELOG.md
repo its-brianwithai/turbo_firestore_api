@@ -1,3 +1,15 @@
+## 🚀 Version 0.6.0 (January 2024)
+---
+### ✨ Features:
+* Added `upsertLocalDocs` method for consistent batch local operations
+
+### 🛠️ Improvements:
+* Improved upsert operations to always use `createDoc` with `merge: true`
+* Removed incorrect exists checks in upsert operations
+
+### 🐛 Bug fixes:
+* Fixed incorrect document creation skipping in upsert operations
+
 ## 🚀 Version 0.5.0 (January 2024)
 
 * **💔 Breaking:** Removed `templateBlockNotify`.

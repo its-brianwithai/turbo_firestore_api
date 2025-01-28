@@ -42,19 +42,21 @@ abstract class AfSyncTurboDocumentService<T extends TurboWriteableId<String>,
     return (value, user) {
       if (user != null) {
         log.debug('Updating doc for user ${user.uid}');
-        final pDoc = updateLocalDoc(
-          id: value?.id,
-          doc: (_, __) => value,
-        );
-        _isReady.completeIfNotComplete();
-        afterSyncNotifyUpdate(pDoc);
+        if (value != null) {
+          final pDoc = updateLocalDoc(
+            id: value.id,
+            doc: (current, _) => value,
+          );
+          _isReady.completeIfNotComplete();
+          afterSyncNotifyUpdate(pDoc);
+        } else {
+          _doc.update(null);
+          afterSyncNotifyUpdate(null);
+        }
         log.debug('Updated doc');
       } else {
         log.debug('User is null, clearing doc');
-        updateLocalDoc(
-          id: null,
-          doc: (_, __) => null,
-        );
+        _doc.update(null);
         afterSyncNotifyUpdate(null);
       }
     };

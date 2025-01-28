@@ -40,23 +40,24 @@ abstract class BeSyncTurboDocumentService<T extends TurboWriteableId<String>,
   @override
   void Function(T? value, User? user) get onData {
     return (value, user) {
-      final doc = value;
       if (user != null) {
         log.debug('Updating doc for user ${user.uid}');
-        beforeSyncNotifyUpdate(doc);
-        updateLocalDoc(
-          id: value?.id,
-          doc: (_, __) => value,
-        );
-        _isReady.completeIfNotComplete();
+        if (value != null) {
+          beforeSyncNotifyUpdate(value);
+          updateLocalDoc(
+            id: value.id,
+            doc: (current, _) => value,
+          );
+          _isReady.completeIfNotComplete();
+        } else {
+          beforeSyncNotifyUpdate(null);
+          _doc.update(null);
+        }
         log.debug('Updated doc');
       } else {
         log.debug('User is null, clearing doc');
         beforeSyncNotifyUpdate(null);
-        updateLocalDoc(
-          id: null,
-          doc: (_, __) => value,
-        );
+        _doc.update(null);
       }
     };
   }

@@ -12,6 +12,7 @@ import 'package:turbo_firestore_api/extensions/completer_extension.dart';
 import 'package:turbo_firestore_api/models/turbo_auth_vars.dart';
 import 'package:turbo_firestore_api/typedefs/create_doc_def.dart';
 import 'package:turbo_firestore_api/typedefs/update_doc_def.dart';
+import 'package:turbo_firestore_api/typedefs/upsert_doc_def.dart';
 import 'package:turbo_response/turbo_response.dart';
 import 'package:turbo_firestore_api/extensions/turbo_list_extension.dart';
 import 'package:turbo_firestore_api/services/turbo_auth_sync_service.dart';
@@ -283,6 +284,120 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
     }
     if (doNotifyListeners) _docsPerId.rebuild();
     return pDocs;
+  }
+
+  /// Upserts (updates or inserts) multiple documents in local state.
+  ///
+  /// This method will either update existing documents or create new ones
+  /// if they don't exist. The [doc] function receives each current document
+  /// (or null if it doesn't exist) and should return the new document state.
+  ///
+  /// Parameters:
+  /// - [ids] - The IDs of the documents to upsert
+  /// - [doc] - The definition of how to upsert the documents
+  /// - [doNotifyListeners] - Whether to notify listeners of the changes
+  ///
+  /// Returns the list of upserted documents
+  @protected
+  List<T> upsertLocalDocs({
+    required List<String> ids,
+    required UpsertDocDef<T> doc,
+    bool doNotifyListeners = true,
+  }) {
+    log.debug('Upserting ${ids.length} local docs');
+    final pDocs = <T>[];
+    for (final id in ids) {
+      final pDoc = upsertLocalDoc(
+        id: id,
+        doc: doc,
+        doNotifyListeners: false,
+      );
+      pDocs.add(pDoc);
+    }
+    if (doNotifyListeners) _docsPerId.rebuild();
+    return pDocs;
+  }
+
+  /// Upserts (updates or inserts) a document in local state.
+  ///
+  /// This method will either update an existing document or create a new one
+  /// if it doesn't exist. The [doc] function receives the current document
+  /// (or null if it doesn't exist) and should return the new document state.
+  ///
+  /// Parameters:
+  /// - [id] - The ID of the document to upsert
+  /// - [doc] - The definition of how to upsert the document
+  /// - [doNotifyListeners] - Whether to notify listeners of the change
+  ///
+  /// Returns the upserted document
+  @protected
+  T upsertLocalDoc({
+    required String id,
+    required UpsertDocDef<T> doc,
+    bool doNotifyListeners = true,
+  }) {
+    log.debug('Upserting local doc with id: $id');
+    final pDoc = doc(tryFindById(id), turboVars(id: id));
+    _docsPerId.updateCurrent(
+      (value) => value..[pDoc.id] = pDoc,
+      doNotifyListeners: doNotifyListeners,
+    );
+    return pDoc;
+  }
+
+  /// Upserts (updates or inserts) a document both locally and in Firestore.
+  ///
+  /// This method will either update an existing document or create a new one
+  /// if it doesn't exist. The [doc] function receives the current document
+  /// (or null if it doesn't exist) and should return the new document state.
+  ///
+  /// Performs an optimistic upsert by updating the local state first,
+  /// then syncing with Firestore. If the remote upsert fails, the local
+  /// state remains updated.
+  ///
+  /// Parameters:
+  /// - [transaction] - Optional transaction for atomic operations
+  /// - [id] - The ID of the document to upsert
+  /// - [doc] - The definition of how to upsert the document
+  /// - [remoteUpdateRequestBuilder] - Optional builder to modify the document before upserting
+  /// - [doNotifyListeners] - Whether to notify listeners of the change
+  ///
+  /// Returns a [TurboResponse] with the upserted document reference
+  @protected
+  Future<TurboResponse<T>> upsertDoc({
+    Transaction? transaction,
+    required String id,
+    required UpsertDocDef<T> doc,
+    TurboWriteable Function(T doc)? remoteUpdateRequestBuilder,
+    bool doNotifyListeners = true,
+  }) async {
+    try {
+      log.debug('Upserting doc with id: $id');
+      final pDoc = upsertLocalDoc(
+        id: id,
+        doc: doc,
+        doNotifyListeners: doNotifyListeners,
+      );
+      final future = api.createDoc(
+        writeable: remoteUpdateRequestBuilder?.call(pDoc) ?? pDoc,
+        id: id,
+        transaction: transaction,
+        merge: true,
+      );
+      final turboResponse = await future;
+      if (transaction != null) {
+        turboResponse.throwWhenFail();
+      }
+      return turboResponse.mapSuccess((_) => pDoc);
+    } catch (error, stackTrace) {
+      if (transaction != null) rethrow;
+      log.error(
+        '$error caught while upserting doc',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return TurboResponse.fail(error: error);
+    }
   }
 
   // 🕹️ LOCAL & REMOTE MUTATORS --------------------------------------------------------------- \\
@@ -596,6 +711,73 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
       if (transaction != null) rethrow;
       log.error(
         '${error.runtimeType} caught while deleting docs',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return TurboResponse.fail(error: error);
+    }
+  }
+
+  /// Upserts (updates or inserts) multiple documents both locally and in Firestore.
+  ///
+  /// This method will either update existing documents or create new ones
+  /// if they don't exist. The [doc] function receives each current document
+  /// (or null if it doesn't exist) and should return the new document state.
+  ///
+  /// Performs optimistic upserts by updating the local state first,
+  /// then syncing with Firestore. Uses a batch operation for multiple
+  /// documents unless a transaction is provided.
+  ///
+  /// Parameters:
+  /// - [transaction] - Optional transaction for atomic operations
+  /// - [ids] - The IDs of the documents to upsert
+  /// - [doc] - The definition of how to upsert the documents
+  /// - [doNotifyListeners] - Whether to notify listeners of the changes
+  ///
+  /// Returns a [TurboResponse] with the list of upserted documents
+  @protected
+  Future<TurboResponse<List<T>>> upsertDocs({
+    Transaction? transaction,
+    required List<String> ids,
+    required UpsertDocDef<T> doc,
+    bool doNotifyListeners = true,
+  }) async {
+    try {
+      log.debug('Upserting ${ids.length} docs');
+      final pDocs = upsertLocalDocs(
+        ids: ids,
+        doc: doc,
+        doNotifyListeners: doNotifyListeners,
+      );
+      if (transaction != null) {
+        for (final pDoc in pDocs) {
+          (await api.createDoc(
+            writeable: pDoc,
+            id: pDoc.id,
+            transaction: transaction,
+            merge: true,
+          ))
+              .throwWhenFail();
+        }
+        return TurboResponse.success(result: pDocs);
+      } else {
+        final batch = api.writeBatch;
+        for (final pDoc in pDocs) {
+          await api.createDocInBatch(
+            id: pDoc.id,
+            writeBatch: batch,
+            writeable: pDoc,
+            merge: true,
+          );
+        }
+        final future = batch.commit();
+        await future;
+        return TurboResponse.success(result: pDocs);
+      }
+    } catch (error, stackTrace) {
+      if (transaction != null) rethrow;
+      log.error(
+        '${error.runtimeType} caught while upserting docs',
         error: error,
         stackTrace: stackTrace,
       );

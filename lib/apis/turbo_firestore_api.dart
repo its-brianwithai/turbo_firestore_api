@@ -245,13 +245,13 @@ class TurboFirestoreApi<T> {
     String? collectionPathOverride,
   }) async {
     assert(
-      _isCollectionGroup == (collectionPathOverride != null),
-      'Firestore does not support finding a document by id when communicating with a collection group, '
-      'therefore, you must specify the collectionPathOverride containing all parent collection and document ids '
-      'in order to make this method work.',
+    _isCollectionGroup == (collectionPathOverride != null),
+    'Firestore does not support finding a document by id when communicating with a collection group, '
+        'therefore, you must specify the collectionPathOverride containing all parent collection and document ids '
+        'in order to make this method work.',
     );
     final docRef =
-        getDocRefById(id: id, collectionPathOverride: collectionPathOverride);
+    getDocRefById(id: id, collectionPathOverride: collectionPathOverride);
     _log.debug(
       message: 'Checking if document exists..',
       sensitiveData: SensitiveData(
@@ -287,8 +287,8 @@ class TurboFirestoreApi<T> {
   ///
   /// This method properly unwraps the TurboResponse and handles error cases.
   WriteBatchWithReference<Map<String, dynamic>>? _handleBatchResponse(
-    TurboResponse<WriteBatchWithReference<Map<String, dynamic>>> response,
-  ) {
+      TurboResponse<WriteBatchWithReference<Map<String, dynamic>>> response,
+      ) {
     return response.when<WriteBatchWithReference<Map<String, dynamic>>?>(
       success: (success) => success.result,
       fail: (_) => null,
@@ -299,8 +299,8 @@ class TurboFirestoreApi<T> {
   ///
   /// This method properly handles the batch response and executes the commit operation.
   Future<TurboResponse<DocumentReference>> _handleBatchOperation(
-    TurboResponse<WriteBatchWithReference<Map<String, dynamic>>> batchResponse,
-  ) async {
+      TurboResponse<WriteBatchWithReference<Map<String, dynamic>>> batchResponse,
+      ) async {
     final batchResult = _handleBatchResponse(batchResponse);
     if (batchResult != null) {
       _log.debug(
@@ -329,10 +329,10 @@ class TurboFirestoreApi<T> {
 
   /// Helper method to run a [Transaction] from [_firebaseFirestore]..
   Future<E> runTransaction<E>(
-    TransactionHandler<E> transactionHandler, {
-    Duration timeout = const Duration(seconds: 30),
-    int maxAttempts = 5,
-  }) =>
+      TransactionHandler<E> transactionHandler, {
+        Duration timeout = const Duration(seconds: 30),
+        int maxAttempts = 5,
+      }) =>
       _firebaseFirestore.runTransaction(
         transactionHandler,
         timeout: timeout,

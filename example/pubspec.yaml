@@ -31,14 +31,18 @@ dependencies:
   flutter:
     sdk: flutter
 
-  veto: ^0.0.1+7
   cloud_firestore: ^5.6.0
-  turbo_firestore_api:
-    path: ../
 
   cupertino_icons: ^1.0.8
   firebase_core: ^3.9.0
-  turbo_response: ^0.2.1
+
+  #  Packages
+  veto:
+    path: ../../veto
+  turbo_response:
+    path: ../../turbo_response
+  turbo_firestore_api:
+    path: ../../turbo_firestore_api
 
 dev_dependencies:
   flutter_test:

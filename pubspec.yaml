@@ -15,12 +15,9 @@ dependencies:
     sdk: flutter
   rxdart: ^0.28.0
 
-  loglytics:
-    path: ../loglytics
-  turbo_response:
-    path: ../turbo_response
-  informers:
-    path: ../informers
+  loglytics: ^0.15.0
+  turbo_response: ^0.2.6
+  informers: ^0.0.3+2
 
 
 dev_dependencies:

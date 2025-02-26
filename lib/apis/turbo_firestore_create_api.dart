@@ -72,8 +72,7 @@ extension TurboFirestoreCreateApi<T> on TurboFirestoreApi {
     required TurboWriteable writeable,
     String? id,
     WriteBatch? writeBatch,
-    TurboTimestampType createTimeStampType =
-        TurboTimestampType.createdAtAndUpdatedAt,
+    TurboTimestampType createTimeStampType = TurboTimestampType.createdAtAndUpdatedAt,
     TurboTimestampType updateTimeStampType = TurboTimestampType.updatedAt,
     bool merge = false,
     List<FieldPath>? mergeFields,
@@ -87,10 +86,8 @@ extension TurboFirestoreCreateApi<T> on TurboFirestoreApi {
       'in order to make this method work.',
     );
     try {
-      _log.debug(
-          message: 'Checking if writeable is valid..', sensitiveData: null);
-      final TurboResponse<DocumentReference>? invalidResponse =
-          writeable.validate();
+      _log.debug(message: 'Checking if writeable is valid..', sensitiveData: null);
+      final TurboResponse<DocumentReference>? invalidResponse = writeable.validate();
       if (invalidResponse != null && invalidResponse.isFail) {
         _log.warning(
           message: 'TurboWriteable was invalid!',
@@ -113,9 +110,7 @@ extension TurboFirestoreCreateApi<T> on TurboFirestoreApi {
         ),
       );
       if (writeBatch != null) {
-        _log.debug(
-            message: 'WriteBatch was not null! Creating with batch..',
-            sensitiveData: null);
+        _log.debug(message: 'WriteBatch was not null! Creating with batch..', sensitiveData: null);
         final lastBatchResponse = await createDocInBatch(
           writeable: writeable,
           id: id,
@@ -126,38 +121,32 @@ extension TurboFirestoreCreateApi<T> on TurboFirestoreApi {
           merge: merge,
           mergeFields: mergeFields,
         );
-        _log.debug(
-            message: 'Checking if batchCreate was successful..',
-            sensitiveData: null);
+        _log.debug(message: 'Checking if batchCreate was successful..', sensitiveData: null);
         return _handleBatchOperation(lastBatchResponse);
       } else {
-        _log.debug(
-            message: 'WriteBatch was null! Creating without batch..',
-            sensitiveData: null);
+        _log.debug(message: 'WriteBatch was null! Creating without batch..', sensitiveData: null);
         final documentReference = id != null
             ? getDocRefById(
                 id: id,
                 collectionPathOverride: collectionPathOverride,
               )
-            : _firebaseFirestore
-                .collection(collectionPathOverride ?? _collectionPath())
-                .doc();
+            : _firebaseFirestore.collection(collectionPathOverride ?? _collectionPath()).doc();
         _log.debug(
           message: 'Creating JSON..',
           sensitiveData: null,
         );
-        final writeableAsJson = (merge || mergeFields != null) &&
-                (await documentReference.get(_getOptions)).exists
-            ? updateTimeStampType.add(
-                writeable.toJson(),
-                updatedAtFieldName: _updatedAtFieldName,
-                createdAtFieldName: _createdAtFieldName,
-              )
-            : createTimeStampType.add(
-                writeable.toJson(),
-                createdAtFieldName: _createdAtFieldName,
-                updatedAtFieldName: _updatedAtFieldName,
-              );
+        final writeableAsJson =
+            (merge || mergeFields != null) && (await documentReference.get(_getOptions)).exists
+                ? updateTimeStampType.add(
+                    writeable.toJson(),
+                    updatedAtFieldName: _updatedAtFieldName,
+                    createdAtFieldName: _createdAtFieldName,
+                  )
+                : createTimeStampType.add(
+                    writeable.toJson(),
+                    createdAtFieldName: _createdAtFieldName,
+                    updatedAtFieldName: _updatedAtFieldName,
+                  );
         var setOptions = SetOptions(
           merge: mergeFields == null ? merge : null,
           mergeFields: mergeFields,
@@ -267,13 +256,11 @@ extension TurboFirestoreCreateApi<T> on TurboFirestoreApi {
   /// See also:
   /// - [createDoc] for single document operations
   /// - [WriteBatchWithReference] for batch result structure
-  Future<TurboResponse<WriteBatchWithReference<Map<String, dynamic>>>>
-      createDocInBatch({
+  Future<TurboResponse<WriteBatchWithReference<Map<String, dynamic>>>> createDocInBatch({
     required TurboWriteable writeable,
     String? id,
     WriteBatch? writeBatch,
-    TurboTimestampType createTimeStampType =
-        TurboTimestampType.createdAtAndUpdatedAt,
+    TurboTimestampType createTimeStampType = TurboTimestampType.createdAtAndUpdatedAt,
     TurboTimestampType updateTimeStampType = TurboTimestampType.updatedAt,
     bool merge = false,
     List<FieldPath>? mergeFields,
@@ -286,8 +273,8 @@ extension TurboFirestoreCreateApi<T> on TurboFirestoreApi {
       'in order to make this method work.',
     );
     try {
-      final TurboResponse<WriteBatchWithReference<Map<String, dynamic>>>?
-          invalidResponse = writeable.validate();
+      final TurboResponse<WriteBatchWithReference<Map<String, dynamic>>>? invalidResponse =
+          writeable.validate();
       if (invalidResponse != null && invalidResponse.isFail) {
         _log.warning(
           message: 'TurboWriteable was invalid!',
@@ -310,24 +297,21 @@ extension TurboFirestoreCreateApi<T> on TurboFirestoreApi {
       );
       final nullSafeWriteBatch = writeBatch ?? this.writeBatch;
       final documentReference = id != null
-          ? getDocRefById(
-              id: id, collectionPathOverride: collectionPathOverride)
-          : _firebaseFirestore
-              .collection(collectionPathOverride ?? _collectionPath())
-              .doc();
+          ? getDocRefById(id: id, collectionPathOverride: collectionPathOverride)
+          : _firebaseFirestore.collection(collectionPathOverride ?? _collectionPath()).doc();
       _log.debug(message: 'Creating JSON..', sensitiveData: null);
-      final writeableAsJson = (merge || mergeFields != null) &&
-              (await documentReference.get(_getOptions)).exists
-          ? updateTimeStampType.add(
-              writeable.toJson(),
-              updatedAtFieldName: _updatedAtFieldName,
-              createdAtFieldName: _createdAtFieldName,
-            )
-          : createTimeStampType.add(
-              writeable.toJson(),
-              createdAtFieldName: _createdAtFieldName,
-              updatedAtFieldName: _updatedAtFieldName,
-            );
+      final writeableAsJson =
+          (merge || mergeFields != null) && (await documentReference.get(_getOptions)).exists
+              ? updateTimeStampType.add(
+                  writeable.toJson(),
+                  updatedAtFieldName: _updatedAtFieldName,
+                  createdAtFieldName: _createdAtFieldName,
+                )
+              : createTimeStampType.add(
+                  writeable.toJson(),
+                  createdAtFieldName: _createdAtFieldName,
+                  updatedAtFieldName: _updatedAtFieldName,
+                );
       _log.debug(
         message: 'Setting data with writeBatch.set..',
         sensitiveData: SensitiveData(
@@ -345,8 +329,7 @@ extension TurboFirestoreCreateApi<T> on TurboFirestoreApi {
         ),
       );
       _log.info(
-        message:
-            'Adding create to batch done! Returning WriteBatchWithReference..',
+        message: 'Adding create to batch done! Returning WriteBatchWithReference..',
         sensitiveData: null,
       );
       return TurboResponse.success(

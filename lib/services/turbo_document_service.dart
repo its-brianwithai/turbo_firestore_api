@@ -37,8 +37,7 @@ part 'af_sync_turbo_document_service.dart';
 /// - [T] - The document type, must extend [TurboWriteableId<String>]
 /// - [API] - The Firestore API type, must extend [TurboFirestoreApi<T>]
 abstract class TurboDocumentService<T extends TurboWriteableId<String>,
-API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<T?>
-    with Loglytics {
+    API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<T?> with Loglytics {
   /// Creates a new [TurboDocumentService] instance.
   ///
   /// Parameters:
@@ -114,9 +113,8 @@ API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<T?>
   // 🎩 STATE --------------------------------------------------------------------------------- \\
 
   /// Local state for the document.
-  late final _doc = Informer<T?>(
-      initialValueLocator?.call() ?? defaultValueLocator?.call(),
-      forceUpdate: true);
+  late final _doc =
+      Informer<T?>(initialValueLocator?.call() ?? defaultValueLocator?.call(), forceUpdate: true);
 
   /// Completer that resolves when the service is ready.
   final _isReady = Completer();

@@ -17,9 +17,7 @@ class TurboAuthVars extends TurboApiVars {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TurboAuthVars &&
-          runtimeType == other.runtimeType &&
-          userId == other.userId;
+      other is TurboAuthVars && runtimeType == other.runtimeType && userId == other.userId;
 
   @override
   int get hashCode => userId.hashCode;

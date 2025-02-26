@@ -85,8 +85,7 @@ extension TurboFirestoreSearchApi<T> on TurboFirestoreApi<T> {
           limit: limit,
         ),
       );
-      collectionReferenceQuery(
-              Query<Map<String, dynamic>> collectionReference) =>
+      collectionReferenceQuery(Query<Map<String, dynamic>> collectionReference) =>
           switch (searchTermType) {
             TurboSearchTermType.arrayContains => limit == null
                 ? collectionReference.where(
@@ -123,8 +122,7 @@ extension TurboFirestoreSearchApi<T> on TurboFirestoreApi<T> {
         try {
           final numberSearchTerm = double.tryParse(searchTerm);
           if (numberSearchTerm != null) {
-            collectionReferenceQuery(
-                    Query<Map<String, dynamic>> collectionReference) =>
+            collectionReferenceQuery(Query<Map<String, dynamic>> collectionReference) =>
                 switch (searchTermType) {
                   TurboSearchTermType.arrayContains => limit == null
                       ? collectionReference.where(
@@ -161,8 +159,7 @@ extension TurboFirestoreSearchApi<T> on TurboFirestoreApi<T> {
           }
         } catch (error, stackTrace) {
           _log.error(
-            message:
-                '${error.runtimeType} caught while trying to search for number equivalent',
+            message: '${error.runtimeType} caught while trying to search for number equivalent',
             sensitiveData: SensitiveData(
               path: _collectionPath(),
               searchTerm: searchTerm,
@@ -251,8 +248,7 @@ extension TurboFirestoreSearchApi<T> on TurboFirestoreApi<T> {
           limit: limit,
         ),
       );
-      collectionReferenceQuery(Query<T> collectionReference) =>
-          switch (searchTermType) {
+      collectionReferenceQuery(Query<T> collectionReference) => switch (searchTermType) {
             TurboSearchTermType.arrayContains => limit == null
                 ? collectionReference.where(
                     searchField,
@@ -286,8 +282,7 @@ extension TurboFirestoreSearchApi<T> on TurboFirestoreApi<T> {
         try {
           final numberSearchTerm = double.tryParse(searchTerm);
           if (numberSearchTerm != null) {
-            collectionReferenceQuery(Query<T> collectionReference) =>
-                switch (searchTermType) {
+            collectionReferenceQuery(Query<T> collectionReference) => switch (searchTermType) {
                   TurboSearchTermType.startsWith => limit == null
                       ? collectionReference.where(
                           searchField,

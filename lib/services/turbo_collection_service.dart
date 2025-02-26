@@ -58,8 +58,7 @@ part 'before_after_sync_turbo_collection_service.dart';
 /// - Error handling and logging
 /// - User authentication state synchronization
 abstract class TurboCollectionService<T extends TurboWriteableId<String>,
-        API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<List<T>>
-    with Loglytics {
+    API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<List<T>> with Loglytics {
   /// Creates a new [TurboCollectionService] instance.
   ///
   /// Parameters:

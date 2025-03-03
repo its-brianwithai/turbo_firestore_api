@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:turbo_firestore_api/constants/k_error_codes.dart';
 import 'package:turbo_firestore_api/models/sensitive_data.dart';
 
 /// A sealed class for Firestore exceptions.
@@ -24,49 +25,105 @@ sealed class TurboFirestoreException implements Exception {
   }) {
     if (error is FirebaseException) {
       switch (error.code) {
-        case 'permission-denied':
+        case KErrorCodes.permissionDenied:
           return TurboFirestorePermissionDeniedException(
-            message: error.message ?? 'Permission denied',
+            message: error.message ?? KErrorCodes.permissionDeniedMessage,
             path: path,
             query: query,
             stackTrace: stackTrace,
             originalException: error,
           );
-        case 'unavailable':
+        case KErrorCodes.unavailable:
           return TurboFirestoreUnavailableException(
-            message: error.message ?? 'Service unavailable',
+            message: error.message ?? KErrorCodes.unavailableMessage,
             stackTrace: stackTrace,
             originalException: error,
           );
-        case 'not-found':
+        case KErrorCodes.notFound:
           return TurboFirestoreNotFoundException(
-            message: error.message ?? 'Document not found',
+            message: error.message ?? KErrorCodes.notFoundMessage,
             path: path,
             stackTrace: stackTrace,
             originalException: error,
           );
-        case 'already-exists':
+        case KErrorCodes.alreadyExists:
           return TurboFirestoreAlreadyExistsException(
-            message: error.message ?? 'Document already exists',
+            message: error.message ?? KErrorCodes.alreadyExistsMessage,
             path: path,
             stackTrace: stackTrace,
             originalException: error,
           );
-        case 'cancelled':
+        case KErrorCodes.cancelled:
           return TurboFirestoreCancelledException(
-            message: error.message ?? 'Operation cancelled',
+            message: error.message ?? KErrorCodes.cancelledMessage,
             stackTrace: stackTrace,
             originalException: error,
           );
-        case 'deadline-exceeded':
+        case KErrorCodes.deadlineExceeded:
           return TurboFirestoreDeadlineExceededException(
-            message: error.message ?? 'Deadline exceeded',
+            message: error.message ?? KErrorCodes.deadlineExceededMessage,
+            stackTrace: stackTrace,
+            originalException: error,
+          );
+        case KErrorCodes.invalidArgument:
+          return TurboFirestoreGenericException(
+            message: error.message ?? KErrorCodes.invalidArgumentMessage,
+            code: error.code,
+            stackTrace: stackTrace,
+            originalException: error,
+          );
+        case KErrorCodes.failedPrecondition:
+          return TurboFirestoreGenericException(
+            message: error.message ?? KErrorCodes.failedPreconditionMessage,
+            code: error.code,
+            stackTrace: stackTrace,
+            originalException: error,
+          );
+        case KErrorCodes.outOfRange:
+          return TurboFirestoreGenericException(
+            message: error.message ?? KErrorCodes.outOfRangeMessage,
+            code: error.code,
+            stackTrace: stackTrace,
+            originalException: error,
+          );
+        case KErrorCodes.unauthenticated:
+          return TurboFirestoreGenericException(
+            message: error.message ?? KErrorCodes.unauthenticatedMessage,
+            code: error.code,
+            stackTrace: stackTrace,
+            originalException: error,
+          );
+        case KErrorCodes.resourceExhausted:
+          return TurboFirestoreGenericException(
+            message: error.message ?? KErrorCodes.resourceExhaustedMessage,
+            code: error.code,
+            stackTrace: stackTrace,
+            originalException: error,
+          );
+        case KErrorCodes.internal:
+          return TurboFirestoreGenericException(
+            message: error.message ?? KErrorCodes.internalMessage,
+            code: error.code,
+            stackTrace: stackTrace,
+            originalException: error,
+          );
+        case KErrorCodes.unimplemented:
+          return TurboFirestoreGenericException(
+            message: error.message ?? KErrorCodes.unimplementedMessage,
+            code: error.code,
+            stackTrace: stackTrace,
+            originalException: error,
+          );
+        case KErrorCodes.dataLoss:
+          return TurboFirestoreGenericException(
+            message: error.message ?? KErrorCodes.dataLossMessage,
+            code: error.code,
             stackTrace: stackTrace,
             originalException: error,
           );
         default:
           return TurboFirestoreGenericException(
-            message: error.message ?? 'Unknown Firestore error',
+            message: error.message ?? KErrorCodes.unknownMessage,
             code: error.code,
             stackTrace: stackTrace,
             originalException: error,
@@ -75,7 +132,7 @@ sealed class TurboFirestoreException implements Exception {
     } else {
       return TurboFirestoreGenericException(
         message: error.toString(),
-        code: 'unknown',
+        code: KErrorCodes.unknown,
         stackTrace: stackTrace,
         originalException: error,
       );
@@ -122,10 +179,27 @@ final class TurboFirestorePermissionDeniedException extends TurboFirestoreExcept
     super.query,
     super.stackTrace,
     required this.originalException,
-  }) : super(code: 'permission-denied');
+  }) : super(code: KErrorCodes.permissionDenied);
 
   /// The original Firebase exception.
   final FirebaseException originalException;
+
+  @override
+  String toString() {
+    final buffer = StringBuffer('TurboFirestorePermissionDeniedException: $message');
+    buffer.write(' (code: $code)');
+    if (path != null) {
+      buffer.write(' (path: $path)');
+    }
+    if (query != null) {
+      buffer.write(' (query: $query)');
+    }
+    buffer.write('\nOriginal exception: ${originalException.toString()}');
+    if (stackTrace != null) {
+      buffer.write('\nStack trace: $stackTrace');
+    }
+    return buffer.toString();
+  }
 }
 
 /// Exception thrown when a Firestore service is unavailable.
@@ -135,10 +209,27 @@ final class TurboFirestoreUnavailableException extends TurboFirestoreException {
     required super.message,
     super.stackTrace,
     required this.originalException,
-  }) : super(code: 'unavailable');
+  }) : super(code: KErrorCodes.unavailable);
 
   /// The original Firebase exception.
   final FirebaseException originalException;
+
+  @override
+  String toString() {
+    final buffer = StringBuffer('TurboFirestoreUnavailableException: $message');
+    buffer.write(' (code: $code)');
+    if (path != null) {
+      buffer.write(' (path: $path)');
+    }
+    if (query != null) {
+      buffer.write(' (query: $query)');
+    }
+    buffer.write('\nOriginal exception: ${originalException.toString()}');
+    if (stackTrace != null) {
+      buffer.write('\nStack trace: $stackTrace');
+    }
+    return buffer.toString();
+  }
 }
 
 /// Exception thrown when a document is not found.
@@ -149,10 +240,27 @@ final class TurboFirestoreNotFoundException extends TurboFirestoreException {
     super.path,
     super.stackTrace,
     required this.originalException,
-  }) : super(code: 'not-found');
+  }) : super(code: KErrorCodes.notFound);
 
   /// The original Firebase exception.
   final FirebaseException originalException;
+
+  @override
+  String toString() {
+    final buffer = StringBuffer('TurboFirestoreNotFoundException: $message');
+    buffer.write(' (code: $code)');
+    if (path != null) {
+      buffer.write(' (path: $path)');
+    }
+    if (query != null) {
+      buffer.write(' (query: $query)');
+    }
+    buffer.write('\nOriginal exception: ${originalException.toString()}');
+    if (stackTrace != null) {
+      buffer.write('\nStack trace: $stackTrace');
+    }
+    return buffer.toString();
+  }
 }
 
 /// Exception thrown when a document already exists.
@@ -163,10 +271,27 @@ final class TurboFirestoreAlreadyExistsException extends TurboFirestoreException
     super.path,
     super.stackTrace,
     required this.originalException,
-  }) : super(code: 'already-exists');
+  }) : super(code: KErrorCodes.alreadyExists);
 
   /// The original Firebase exception.
   final FirebaseException originalException;
+
+  @override
+  String toString() {
+    final buffer = StringBuffer('TurboFirestoreAlreadyExistsException: $message');
+    buffer.write(' (code: $code)');
+    if (path != null) {
+      buffer.write(' (path: $path)');
+    }
+    if (query != null) {
+      buffer.write(' (query: $query)');
+    }
+    buffer.write('\nOriginal exception: ${originalException.toString()}');
+    if (stackTrace != null) {
+      buffer.write('\nStack trace: $stackTrace');
+    }
+    return buffer.toString();
+  }
 }
 
 /// Exception thrown when an operation is cancelled.
@@ -176,10 +301,27 @@ final class TurboFirestoreCancelledException extends TurboFirestoreException {
     required super.message,
     super.stackTrace,
     required this.originalException,
-  }) : super(code: 'cancelled');
+  }) : super(code: KErrorCodes.cancelled);
 
   /// The original Firebase exception.
   final FirebaseException originalException;
+
+  @override
+  String toString() {
+    final buffer = StringBuffer('TurboFirestoreCancelledException: $message');
+    buffer.write(' (code: $code)');
+    if (path != null) {
+      buffer.write(' (path: $path)');
+    }
+    if (query != null) {
+      buffer.write(' (query: $query)');
+    }
+    buffer.write('\nOriginal exception: ${originalException.toString()}');
+    if (stackTrace != null) {
+      buffer.write('\nStack trace: $stackTrace');
+    }
+    return buffer.toString();
+  }
 }
 
 /// Exception thrown when a deadline is exceeded.
@@ -189,10 +331,27 @@ final class TurboFirestoreDeadlineExceededException extends TurboFirestoreExcept
     required super.message,
     super.stackTrace,
     required this.originalException,
-  }) : super(code: 'deadline-exceeded');
+  }) : super(code: KErrorCodes.deadlineExceeded);
 
   /// The original Firebase exception.
   final FirebaseException originalException;
+
+  @override
+  String toString() {
+    final buffer = StringBuffer('TurboFirestoreDeadlineExceededException: $message');
+    buffer.write(' (code: $code)');
+    if (path != null) {
+      buffer.write(' (path: $path)');
+    }
+    if (query != null) {
+      buffer.write(' (query: $query)');
+    }
+    buffer.write('\nOriginal exception: ${originalException.toString()}');
+    if (stackTrace != null) {
+      buffer.write('\nStack trace: $stackTrace');
+    }
+    return buffer.toString();
+  }
 }
 
 /// Generic Firestore exception for other error types.
@@ -207,4 +366,21 @@ final class TurboFirestoreGenericException extends TurboFirestoreException {
 
   /// The original exception.
   final Object originalException;
+
+  @override
+  String toString() {
+    final buffer = StringBuffer('TurboFirestoreGenericException: $message');
+    buffer.write(' (code: $code)');
+    if (path != null) {
+      buffer.write(' (path: $path)');
+    }
+    if (query != null) {
+      buffer.write(' (query: $query)');
+    }
+    buffer.write('\nOriginal exception: ${originalException.toString()}');
+    if (stackTrace != null) {
+      buffer.write('\nStack trace: $stackTrace');
+    }
+    return buffer.toString();
+  }
 }

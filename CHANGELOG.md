@@ -1,7 +1,18 @@
+## 🚀 Version 0.7.0 (March 2024)
+
+### ✨ Features:
+* Enhanced error handling using `TurboFirestoreException.fromFirestoreException` for more structured error responses across all API methods
+
+### 🛠️ Improvements:
+* Refined documentation for error handling features 
+* Improved code consistency across API implementations
+* Added detailed examples for exception handling
+
 ## 🚀 Version 0.6.1 (January 2024)
 
 ### 🛠️ Improvements:
 * Updated sync services to use `upsertLocalDoc` instead of `updateLocalDoc` for better consistency
+* Enhanced error handling across multiple API methods using `TurboFirestoreException.fromFirestoreException` for more structured error responses
 
 ## 🚀 Version 0.6.0 (January 2024)
 ---

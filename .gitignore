@@ -30,3 +30,5 @@ build/
 scripts
 
 .cursor/rules/
+.pew/config/secrets.yaml
+.pew/.logs/

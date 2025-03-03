@@ -17,6 +17,7 @@ import 'package:turbo_firestore_api/typedefs/update_doc_def.dart';
 import 'package:turbo_firestore_api/typedefs/upsert_doc_def.dart';
 import 'package:turbo_response/turbo_response.dart';
 import '../extensions/completer_extension.dart';
+import 'package:turbo_firestore_api/exceptions/turbo_firestore_exception.dart';
 
 part 'be_sync_turbo_document_service.dart';
 part 'be_af_sync_turbo_document_service.dart';
@@ -37,7 +38,7 @@ part 'af_sync_turbo_document_service.dart';
 /// - [T] - The document type, must extend [TurboWriteableId<String>]
 /// - [API] - The Firestore API type, must extend [TurboFirestoreApi<T>]
 abstract class TurboDocumentService<T extends TurboWriteableId<String>,
-API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<T?>
+        API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<T?>
     with Loglytics {
   /// Creates a new [TurboDocumentService] instance.
   ///
@@ -109,6 +110,32 @@ API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<T?>
         _doc.update(null);
       }
     };
+  }
+
+  /// Called when a stream error occurs.
+  ///
+  /// Override this method to handle specific Firestore error types.
+  ///
+  /// Example:
+  /// ```dart
+  /// @override
+  /// void onError(TurboFirestoreException error) {
+  ///   if (error is TurboFirestorePermissionDeniedException) {
+  ///     // Handle permission errors
+  ///     showPermissionErrorDialog();
+  ///   } else {
+  ///     // Handle other errors
+  ///     showGenericErrorMessage();
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// Parameters:
+  /// - [error] - The Firestore exception that occurred
+  @override
+  void onError(TurboFirestoreException error) {
+    log.warning('Document service stream error: $error');
+    super.onError(error);
   }
 
   // 🎩 STATE --------------------------------------------------------------------------------- \\

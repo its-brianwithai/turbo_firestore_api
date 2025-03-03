@@ -89,7 +89,16 @@ extension TurboFirestoreListApi<T> on TurboFirestoreApi<T> {
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.fail(error: error);
+
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error,
+        stackTrace,
+        path: _collectionPath(),
+        query: whereDescription,
+      );
+
+      return TurboResponse.fail(error: exception);
     }
   }
 
@@ -158,7 +167,16 @@ extension TurboFirestoreListApi<T> on TurboFirestoreApi<T> {
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.fail(error: error);
+
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error,
+        stackTrace,
+        path: _collectionPath(),
+        query: whereDescription,
+      );
+
+      return TurboResponse.fail(error: exception);
     }
   }
 
@@ -213,7 +231,16 @@ extension TurboFirestoreListApi<T> on TurboFirestoreApi<T> {
           ),
           error: error,
           stackTrace: stackTrace);
-      return TurboResponse.fail(error: error);
+
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error,
+        stackTrace,
+        path: _collectionPath(),
+        query: 'listAll()',
+      );
+
+      return TurboResponse.fail(error: exception);
     }
   }
 
@@ -268,7 +295,16 @@ extension TurboFirestoreListApi<T> on TurboFirestoreApi<T> {
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.fail(error: error);
+
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error,
+        stackTrace,
+        path: _collectionPath(),
+        query: 'listAllWithConverter()',
+      );
+
+      return TurboResponse.fail(error: exception);
     }
   }
 

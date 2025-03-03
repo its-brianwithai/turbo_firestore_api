@@ -140,7 +140,16 @@ extension TurboFirestoreDeleteApi<T> on TurboFirestoreApi<T> {
             message: 'Document deleted successfully');
       }
     } catch (error, stackTrace) {
-      if (transaction != null) rethrow;
+      if (transaction != null) {
+        // Wrap and rethrow for transactions
+        throw TurboFirestoreException.fromFirestoreException(
+          error,
+          stackTrace,
+          path: collectionPathOverride ?? _collectionPath(),
+          query: 'deleteDoc(id: $id)',
+        );
+      }
+
       _log.error(
           message: 'Unable to delete document',
           sensitiveData: SensitiveData(
@@ -149,8 +158,19 @@ extension TurboFirestoreDeleteApi<T> on TurboFirestoreApi<T> {
           ),
           error: error,
           stackTrace: stackTrace);
+
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error,
+        stackTrace,
+        path: collectionPathOverride ?? _collectionPath(),
+        query: 'deleteDoc(id: $id)',
+      );
+
       return TurboResponse.fail(
-          error: error, title: 'Error', message: 'Failed to delete document');
+          error: exception,
+          title: 'Error',
+          message: 'Failed to delete document');
     }
   }
 
@@ -243,7 +263,16 @@ extension TurboFirestoreDeleteApi<T> on TurboFirestoreApi<T> {
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.fail(error: error);
+
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error,
+        stackTrace,
+        path: collectionPathOverride ?? _collectionPath(),
+        query: 'deleteDocInBatch(id: $id)',
+      );
+
+      return TurboResponse.fail(error: exception);
     }
   }
 }

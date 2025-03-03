@@ -1,6 +1,6 @@
 name: turbo_firestore_api
 description: A clean and efficient approach to dealing with data from Firestore.
-version: 0.6.1
+version: 0.7.0
 homepage: https://github.com/ultrawideturbodev/turbo_firestore_api
 repository: https://github.com/codaveto/turbo_firestore_api
 issue_tracker: https://github.com/ultrawideturbodev/turbo_firestore_api/issues
@@ -19,7 +19,6 @@ dependencies:
   turbo_response: ^0.2.6
   informers: ^0.0.3+2
 
-
 dev_dependencies:
   fake_cloud_firestore: ^3.1.0
   flutter_test:
@@ -29,16 +28,15 @@ dev_dependencies:
 flutter:
 
 # The following section is automatically managed by toggle_dependencies.dart
-dependency_overrides:
-  informers:
-    path: ../informers
-  loglytics:
-    path: ../loglytics
-  turbo_firestore_api:
-    path: 
-  turbo_response:
-    path: ../turbo_response
-  veto:
-    path: ../veto
-  shadcn_flutter:
-    path: ../../forks/shadcn_flutter
+#dependency_overrides:
+#  informers:
+#    path: ../informers
+#  loglytics:
+#    path: ../loglytics
+#  turbo_response:
+#    path: ../turbo_response
+#  veto:
+#    path: ../veto
+#  shadcn_flutter:
+#    path: ../../forks/shadcn_flutter
+#

@@ -58,6 +58,7 @@ export 'enums/turbo_parse_type.dart';
 
 /// Exception types for error handling
 export 'exceptions/invalid_json_exception.dart';
+export 'exceptions/turbo_firestore_exception.dart';
 
 /// Data models and utilities
 export 'models/sensitive_data.dart';
@@ -85,3 +86,4 @@ export 'typedefs/turbo_locator_def.dart';
 
 /// Constants
 export 'constants/k_errors.dart';
+export 'constants/k_error_codes.dart';

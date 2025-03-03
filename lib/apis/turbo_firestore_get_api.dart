@@ -103,7 +103,16 @@ extension TurboFirestoreGetApi<T> on TurboFirestoreApi<T> {
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.fail(error: error);
+
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error,
+        stackTrace,
+        path: collectionPathOverride ?? _collectionPath(),
+        query: 'getById(id: $id)',
+      );
+
+      return TurboResponse.fail(error: exception);
     }
   }
 
@@ -189,7 +198,16 @@ extension TurboFirestoreGetApi<T> on TurboFirestoreApi<T> {
           id: id,
         ),
       );
-      return TurboResponse.fail(error: error);
+
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error,
+        stackTrace,
+        path: collectionPathOverride ?? _collectionPath(),
+        query: 'getByIdWithConverter(id: $id)',
+      );
+
+      return TurboResponse.fail(error: exception);
     }
   }
 

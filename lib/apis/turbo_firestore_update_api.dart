@@ -166,7 +166,16 @@ extension TurboFirestoreUpdateApi<T> on TurboFirestoreApi<T> {
         return TurboResponse.success(result: documentReference);
       }
     } catch (error, stackTrace) {
-      if (transaction != null) rethrow;
+      if (transaction != null) {
+        // Wrap and rethrow for transactions
+        throw TurboFirestoreException.fromFirestoreException(
+          error,
+          stackTrace,
+          path: collectionPathOverride ?? _collectionPath(),
+          query: 'updateDoc(id: $id)',
+        );
+      }
+
       _log.error(
         message: 'Unable to update document',
         sensitiveData: SensitiveData(
@@ -178,7 +187,16 @@ extension TurboFirestoreUpdateApi<T> on TurboFirestoreApi<T> {
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.fail(error: error);
+
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error,
+        stackTrace,
+        path: collectionPathOverride ?? _collectionPath(),
+        query: 'updateDoc(id: $id)',
+      );
+
+      return TurboResponse.fail(error: exception);
     }
   }
 
@@ -301,7 +319,16 @@ extension TurboFirestoreUpdateApi<T> on TurboFirestoreApi<T> {
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.fail(error: error);
+
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error,
+        stackTrace,
+        path: collectionPathOverride ?? _collectionPath(),
+        query: 'updateDocInBatch(id: $id)',
+      );
+
+      return TurboResponse.fail(error: exception);
     }
   }
 }

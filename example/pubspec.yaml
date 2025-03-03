@@ -37,12 +37,9 @@ dependencies:
   firebase_core: ^3.9.0
 
   #  Packages
-  veto:
-    path: ../../veto
-  turbo_response:
-    path: ../../turbo_response
-  turbo_firestore_api:
-    path: ../../turbo_firestore_api
+  loglytics: ^0.15.0
+  turbo_response: ^0.2.6
+  informers: ^0.0.3+2
 
 dev_dependencies:
   flutter_test:

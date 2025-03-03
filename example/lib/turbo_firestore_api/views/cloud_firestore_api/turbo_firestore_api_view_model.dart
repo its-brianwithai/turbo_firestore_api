@@ -1,7 +1,6 @@
+import 'package:example/main.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:veto/data/models/base_view_model.dart';
-
-import '../../../main.dart';
 
 class CloudFirestoreApiViewModel extends BaseViewModel {
   CloudFirestoreApiViewModel();

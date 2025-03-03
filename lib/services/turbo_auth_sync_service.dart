@@ -91,7 +91,8 @@ abstract class TurboAuthSyncService<StreamValue> with TurboExceptionHandler {
         },
       );
     } catch (error, stack) {
-      _log.error('Stream error occurred while setting up stream!', error: error, stackTrace: stack);
+      _log.error('Stream error occurred while setting up stream!',
+          error: error, stackTrace: stack);
 
       // Convert error to TurboFirestoreException if needed
       final exception = error is TurboFirestoreException

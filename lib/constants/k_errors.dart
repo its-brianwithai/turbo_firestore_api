@@ -1,5 +1,6 @@
 /// Error code when an account already exists with different credentials.
-const kErrorsAccountExistsWithDifferentCredentials = 'account-exists-with-different-credential';
+const kErrorsAccountExistsWithDifferentCredentials =
+    'account-exists-with-different-credential';
 
 /// Error code when the captcha verification fails.
 const kErrorsCaptchaCheckFailed = 'captcha-check-failed';

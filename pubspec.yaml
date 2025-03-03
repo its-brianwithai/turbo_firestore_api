@@ -28,14 +28,15 @@ dev_dependencies:
 flutter:
 
 # The following section is automatically managed by toggle_dependencies.dart
-dependency_overrides:
-  informers:
-    path: ../informers
-  loglytics:
-    path: ../loglytics
-  turbo_response:
-    path: ../turbo_response
-  veto:
-    path: ../veto
-  shadcn_flutter:
-    path: ../../forks/shadcn_flutter
+#dependency_overrides:
+#  informers:
+#    path: ../informers
+#  loglytics:
+#    path: ../loglytics
+#  turbo_response:
+#    path: ../turbo_response
+#  veto:
+#    path: ../veto
+#  shadcn_flutter:
+#    path: ../../forks/shadcn_flutter
+#

@@ -1230,6 +1230,33 @@ class CreateUserButton extends StatelessWidget {
 }
 ```
 
+### Enhanced Exception Handling
+
+The package uses `TurboFirestoreException.fromFirestoreException` to convert Firestore errors into structured, informative exceptions:
+
+```dart
+try {
+  // Firestore operation
+} catch (error, stackTrace) {
+  // Convert generic error to structured exception
+  final exception = TurboFirestoreException.fromFirestoreException(
+    error,
+    stackTrace,
+    path: 'users',
+    query: 'listAll()',
+  );
+  
+  // Return formatted error response
+  return TurboResponse.fail(error: exception);
+}
+```
+
+This system provides:
+1. **Contextual Information**: Includes collection path and query details
+2. **Stack Trace Preservation**: Maintains original error context
+3. **Consistent Format**: Standardizes error responses across operations
+4. **Rich Error Data**: Includes error code, message, and origin
+
 Key features of TurboResponse error handling:
 1. **No Try-Catch Needed**: All Firestore exceptions are automatically caught and wrapped
 2. **Automatic Validation**: API handles all validation internally through `TurboWriteable`

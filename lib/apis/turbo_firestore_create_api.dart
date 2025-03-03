@@ -186,7 +186,16 @@ extension TurboFirestoreCreateApi<T> on TurboFirestoreApi {
         return TurboResponse.success(result: documentReference);
       }
     } catch (error, stackTrace) {
-      if (transaction != null) rethrow;
+      if (transaction != null) {
+        // Wrap and rethrow for transactions
+        throw TurboFirestoreException.fromFirestoreException(
+          error,
+          stackTrace,
+          path: collectionPathOverride ?? _collectionPath(),
+          query: 'createDoc(id: $id, merge: $merge)',
+        );
+      }
+
       _log.error(
         message: 'Unable to create document',
         sensitiveData: SensitiveData(
@@ -202,7 +211,16 @@ extension TurboFirestoreCreateApi<T> on TurboFirestoreApi {
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.fail(error: error);
+
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error,
+        stackTrace,
+        path: collectionPathOverride ?? _collectionPath(),
+        query: 'createDoc(id: $id, merge: $merge)',
+      );
+
+      return TurboResponse.fail(error: exception);
     }
   }
 
@@ -353,7 +371,16 @@ extension TurboFirestoreCreateApi<T> on TurboFirestoreApi {
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.fail(error: error);
+
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error,
+        stackTrace,
+        path: collectionPathOverride ?? _collectionPath(),
+        query: 'createDocInBatch(id: $id, merge: $merge)',
+      );
+
+      return TurboResponse.fail(error: exception);
     }
   }
 }

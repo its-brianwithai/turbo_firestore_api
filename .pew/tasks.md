@@ -1,477 +1,627 @@
-# Implementation Plan for TurboFirestoreException in Streaming
+# Implementation Plan for TurboFirestoreException in CRUD Operations (1/1)
 
-After reviewing the codebase, I'll create an implementation plan to add a `TurboFirestoreException` sealed class for handling Firestore stream errors and add error handling mechanisms to streaming classes.
-
-This plan can be executed in a single part as the implementation involves focused changes to specific areas of the codebase.
+Based on the initial request to implement `TurboFirestoreException` for streaming operations, I'll now extend this implementation to also cover CRUD (Create, Read, Update, Delete) operations throughout the package.
 
 ## Overview
 
-1. Create a `TurboFirestoreException` sealed class hierarchy
-2. Modify streaming APIs to catch Firestore errors and convert them to `TurboFirestoreException`
-3. Add `onError` methods to streaming service classes
-4. Update documentation and examples
+1. Update the CRUD operation extensions to convert errors to `TurboFirestoreException`
+2. Add exception handling to batch and transaction operations
+3. Ensure proper context information is captured for each operation type
+4. Update service methods to propagate the typed exceptions
 
-## Part 1: Create TurboFirestoreException Class Hierarchy
+## Part 1: Update Create API Extension
 
-Let's create a sealed class called `TurboFirestoreException` with implementations for different Firestore error types:
-
-```dart
-// lib/exceptions/turbo_firestore_exception.dart
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:turbo_firestore_api/models/sensitive_data.dart';
-
-/// A sealed class for Firestore exceptions.
-///
-/// This class provides a type-safe way to handle different types of Firestore errors.
-/// Each error type includes context-specific details about what went wrong.
-sealed class TurboFirestoreException implements Exception {
-  /// Creates a new Firestore exception.
-  const TurboFirestoreException({
-    required this.message,
-    required this.code,
-    this.path,
-    this.query,
-    this.stackTrace,
-  });
-
-  /// Factory method to create the appropriate exception from a Firestore error.
-  factory TurboFirestoreException.fromFirestoreException(
-    Object error,
-    StackTrace stackTrace, {
-    String? path,
-    String? query,
-  }) {
-    if (error is FirebaseException) {
-      switch (error.code) {
-        case 'permission-denied':
-          return TurboFirestorePermissionDeniedException(
-            message: error.message ?? 'Permission denied',
-            path: path,
-            query: query,
-            stackTrace: stackTrace,
-            originalException: error,
-          );
-        case 'unavailable':
-          return TurboFirestoreUnavailableException(
-            message: error.message ?? 'Service unavailable',
-            stackTrace: stackTrace,
-            originalException: error,
-          );
-        case 'not-found':
-          return TurboFirestoreNotFoundException(
-            message: error.message ?? 'Document not found',
-            path: path,
-            stackTrace: stackTrace,
-            originalException: error,
-          );
-        case 'already-exists':
-          return TurboFirestoreAlreadyExistsException(
-            message: error.message ?? 'Document already exists',
-            path: path,
-            stackTrace: stackTrace,
-            originalException: error,
-          );
-        case 'cancelled':
-          return TurboFirestoreCancelledException(
-            message: error.message ?? 'Operation cancelled',
-            stackTrace: stackTrace,
-            originalException: error,
-          );
-        case 'deadline-exceeded':
-          return TurboFirestoreDeadlineExceededException(
-            message: error.message ?? 'Deadline exceeded',
-            stackTrace: stackTrace,
-            originalException: error,
-          );
-        default:
-          return TurboFirestoreGenericException(
-            message: error.message ?? 'Unknown Firestore error',
-            code: error.code,
-            stackTrace: stackTrace,
-            originalException: error,
-          );
-      }
-    } else {
-      return TurboFirestoreGenericException(
-        message: error.toString(),
-        code: 'unknown',
-        stackTrace: stackTrace,
-        originalException: error,
-      );
-    }
-  }
-
-  /// The error message.
-  final String message;
-
-  /// The error code.
-  final String code;
-
-  /// The Firestore path where the error occurred, if applicable.
-  final String? path;
-
-  /// The query that caused the error, if applicable.
-  final String? query;
-
-  /// The stack trace where the error occurred.
-  final StackTrace? stackTrace;
-
-  @override
-  String toString() {
-    final buffer = StringBuffer('TurboFirestoreException: $message');
-    if (code.isNotEmpty) {
-      buffer.write(' (code: $code)');
-    }
-    if (path != null) {
-      buffer.write(' (path: $path)');
-    }
-    if (query != null) {
-      buffer.write(' (query: $query)');
-    }
-    return buffer.toString();
-  }
-}
-
-/// Exception thrown when permission is denied for a Firestore operation.
-final class TurboFirestorePermissionDeniedException extends TurboFirestoreException {
-  /// Creates a new permission denied exception.
-  const TurboFirestorePermissionDeniedException({
-    required super.message,
-    super.path,
-    super.query,
-    super.stackTrace,
-    required this.originalException,
-  }) : super(code: 'permission-denied');
-
-  /// The original Firebase exception.
-  final FirebaseException originalException;
-}
-
-/// Exception thrown when a Firestore service is unavailable.
-final class TurboFirestoreUnavailableException extends TurboFirestoreException {
-  /// Creates a new unavailable service exception.
-  const TurboFirestoreUnavailableException({
-    required super.message,
-    super.stackTrace,
-    required this.originalException,
-  }) : super(code: 'unavailable');
-
-  /// The original Firebase exception.
-  final FirebaseException originalException;
-}
-
-/// Exception thrown when a document is not found.
-final class TurboFirestoreNotFoundException extends TurboFirestoreException {
-  /// Creates a new not found exception.
-  const TurboFirestoreNotFoundException({
-    required super.message,
-    super.path,
-    super.stackTrace,
-    required this.originalException,
-  }) : super(code: 'not-found');
-
-  /// The original Firebase exception.
-  final FirebaseException originalException;
-}
-
-/// Exception thrown when a document already exists.
-final class TurboFirestoreAlreadyExistsException extends TurboFirestoreException {
-  /// Creates a new already exists exception.
-  const TurboFirestoreAlreadyExistsException({
-    required super.message,
-    super.path,
-    super.stackTrace,
-    required this.originalException,
-  }) : super(code: 'already-exists');
-
-  /// The original Firebase exception.
-  final FirebaseException originalException;
-}
-
-/// Exception thrown when an operation is cancelled.
-final class TurboFirestoreCancelledException extends TurboFirestoreException {
-  /// Creates a new cancelled operation exception.
-  const TurboFirestoreCancelledException({
-    required super.message,
-    super.stackTrace,
-    required this.originalException,
-  }) : super(code: 'cancelled');
-
-  /// The original Firebase exception.
-  final FirebaseException originalException;
-}
-
-/// Exception thrown when a deadline is exceeded.
-final class TurboFirestoreDeadlineExceededException extends TurboFirestoreException {
-  /// Creates a new deadline exceeded exception.
-  const TurboFirestoreDeadlineExceededException({
-    required super.message,
-    super.stackTrace,
-    required this.originalException,
-  }) : super(code: 'deadline-exceeded');
-
-  /// The original Firebase exception.
-  final FirebaseException originalException;
-}
-
-/// Generic Firestore exception for other error types.
-final class TurboFirestoreGenericException extends TurboFirestoreException {
-  /// Creates a new generic Firestore exception.
-  const TurboFirestoreGenericException({
-    required super.message,
-    required super.code,
-    super.stackTrace,
-    required this.originalException,
-  });
-
-  /// The original exception.
-  final Object originalException;
-}
-```
-
-## Part 2: Update Streaming APIs to Use TurboFirestoreException
-
-Next, let's modify the streaming API extension in `turbo_firestore_stream_api.dart` to catch Firestore errors and convert them to our new exception type:
+Let's modify the create operations in `turbo_firestore_create_api.dart`:
 
 ```dart
-// Modify lib/apis/turbo_firestore_stream_api.dart
-
 part of 'turbo_firestore_api.dart';
 
-extension TurboFirestoreStreamApi<T> on TurboFirestoreApi<T> {
-  // Existing methods...
-  
-  /// Streams all documents from a collection with exception handling
-  ///
-  /// Returns real-time updates for all documents with error conversion
-  /// Provides raw Firestore data without conversion
-  ///
-  /// Returns [Stream] of [QuerySnapshot] containing:
-  /// - Document data
-  /// - Document metadata
-  /// - Document changes
-  /// Errors are caught and transformed to [TurboFirestoreException]
-  ///
-  /// Example:
-  /// ```dart
-  /// final stream = api.streamAll();
-  /// stream.listen(
-  ///   (snapshot) {
-  ///     for (var doc in snapshot.docs) {
-  ///       print('User data: ${doc.data()}');
-  ///     }
-  ///   },
-  ///   onError: (error) {
-  ///     if (error is TurboFirestorePermissionDeniedException) {
-  ///       print('Permission denied: ${error.message}');
-  ///     }
-  ///   }
-  /// );
-  /// ```
-  Stream<QuerySnapshot<Map<String, dynamic>>> streamAll() {
-    final path = _collectionPath();
-    _log.debug(
-      message: 'Finding stream..',
-      sensitiveData: SensitiveData(
-        path: path,
-      ),
+/// Extension that adds create operations to [TurboFirestoreApi]
+extension TurboFirestoreCreateApi<T> on TurboFirestoreApi {
+  // Existing code...
+
+  /// Creates or writes a document to Firestore.
+  Future<TurboResponse<DocumentReference>> createDoc({
+    required TurboWriteable writeable,
+    String? id,
+    WriteBatch? writeBatch,
+    TurboTimestampType createTimeStampType =
+        TurboTimestampType.createdAtAndUpdatedAt,
+    TurboTimestampType updateTimeStampType = TurboTimestampType.updatedAt,
+    bool merge = false,
+    List<FieldPath>? mergeFields,
+    String? collectionPathOverride,
+    Transaction? transaction,
+  }) async {
+    assert(
+      _isCollectionGroup == (collectionPathOverride != null),
+      'Firestore does not support finding a document by id when communicating with a collection group, '
+      'therefore, you must specify the collectionPathOverride containing all parent collection and document ids '
+      'in order to make this method work.',
     );
-    return listCollectionReference().snapshots().handleError(
-      (error, stackTrace) {
-        _log.error(
-          message: 'Error streaming collection',
-          sensitiveData: SensitiveData(
-            path: path,
-          ),
-          error: error,
-          stackTrace: stackTrace,
-        );
+    try {
+      // Existing validation and operation code...
+    } catch (error, stackTrace) {
+      if (transaction != null) {
+        // Wrap and rethrow for transactions
         throw TurboFirestoreException.fromFirestoreException(
-          error,
-          stackTrace,
-          path: path,
+          error, 
+          stackTrace, 
+          path: collectionPathOverride ?? _collectionPath(),
+          query: 'createDoc(id: $id, merge: $merge)',
         );
-      },
-    );
+      }
+      
+      _log.error(
+        message: 'Unable to create document',
+        sensitiveData: SensitiveData(
+          path: collectionPathOverride ?? _collectionPath(),
+          id: id,
+          isBatch: writeBatch != null,
+          createTimeStampType: createTimeStampType,
+          updateTimeStampType: updateTimeStampType,
+          isMerge: merge,
+          mergeFields: mergeFields,
+          isTransaction: false,
+        ),
+        error: error,
+        stackTrace: stackTrace,
+      );
+      
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error, 
+        stackTrace,
+        path: collectionPathOverride ?? _collectionPath(),
+        query: 'createDoc(id: $id, merge: $merge)',
+      );
+      
+      return TurboResponse.fail(error: exception);
+    }
   }
-  
-  // Update all other streaming methods similarly
-  Stream<List<T>> streamAllWithConverter() {
-    final path = _collectionPath();
-    _log.debug(
-      message: 'Finding stream with converter..',
-      sensitiveData: SensitiveData(
-        path: path,
-      ),
-    );
-    return listCollectionReferenceWithConverter().snapshots().map(
-          (event) => event.docs.map((e) => e.data()).toList(),
-        ).handleError(
-      (error, stackTrace) {
-        _log.error(
-          message: 'Error streaming collection with converter',
-          sensitiveData: SensitiveData(
-            path: path,
-          ),
-          error: error,
-          stackTrace: stackTrace,
-        );
-        throw TurboFirestoreException.fromFirestoreException(
-          error,
-          stackTrace,
-          path: path,
-        );
-      },
-    );
+
+  /// Creates or writes documents using a batch operation.
+  Future<TurboResponse<WriteBatchWithReference<Map<String, dynamic>>>>
+      createDocInBatch({
+    required TurboWriteable writeable,
+    String? id,
+    WriteBatch? writeBatch,
+    TurboTimestampType createTimeStampType =
+        TurboTimestampType.createdAtAndUpdatedAt,
+    TurboTimestampType updateTimeStampType = TurboTimestampType.updatedAt,
+    bool merge = false,
+    List<FieldPath>? mergeFields,
+    String? collectionPathOverride,
+  }) async {
+    // Existing assertion code...
+    
+    try {
+      // Existing operation code...
+    } catch (error, stackTrace) {
+      _log.error(
+        message: 'Unable to create document with batch',
+        sensitiveData: SensitiveData(
+          path: collectionPathOverride ?? _collectionPath(),
+          id: id,
+          isBatch: writeBatch != null,
+          createTimeStampType: createTimeStampType,
+          updateTimeStampType: updateTimeStampType,
+          isMerge: merge,
+          mergeFields: mergeFields,
+        ),
+        error: error,
+        stackTrace: stackTrace,
+      );
+      
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error, 
+        stackTrace,
+        path: collectionPathOverride ?? _collectionPath(),
+        query: 'createDocInBatch(id: $id, merge: $merge)',
+      );
+      
+      return TurboResponse.fail(error: exception);
+    }
   }
-  
-  Stream<List<Map<String, dynamic>>> streamByQuery({
-    required CollectionReferenceDef<Map<String, dynamic>>?
-        collectionReferenceQuery,
-    required String whereDescription,
-  }) {
-    final path = _collectionPath();
-    _log.debug(
-      message: 'Finding stream by query..',
-      sensitiveData: SensitiveData(
-        path: path,
-        whereDescription: whereDescription,
-      ),
-    );
-    final query = collectionReferenceQuery?.call(listCollectionReference()) ??
-        listCollectionReference();
-    return query.snapshots().map(
-          (event) => event.docs.map((e) => e.data()).toList(),
-        ).handleError(
-      (error, stackTrace) {
-        _log.error(
-          message: 'Error streaming collection by query',
-          sensitiveData: SensitiveData(
-            path: path,
-            whereDescription: whereDescription,
-          ),
-          error: error,
-          stackTrace: stackTrace,
-        );
-        throw TurboFirestoreException.fromFirestoreException(
-          error,
-          stackTrace,
-          path: path,
-          query: whereDescription,
-        );
-      },
-    );
-  }
-  
-  // Update other streaming methods similarly...
 }
 ```
 
-## Part 3: Add onError Handler to TurboAuthSyncService
+## Part 2: Update Read API Extension
 
-Let's modify the `TurboAuthSyncService` class to include an `onError` callback:
+Modify the read/get operations in `turbo_firestore_get_api.dart`:
 
 ```dart
-// Update lib/services/turbo_auth_sync_service.dart
+part of 'turbo_firestore_api.dart';
 
-class TurboAuthSyncService<StreamValue> with TurboExceptionHandler {
-  /// Creates a new [TurboAuthSyncService] instance.
-  ///
-  /// Parameters:
-  /// - [initialiseStream] - Whether to start the stream immediately
-  TurboAuthSyncService({
-    bool initialiseStream = true,
-  }) {
-    if (initialiseStream) {
-      tryInitialiseStream();
-    }
-  }
-  
-  // Existing methods and fields...
-  
-  /// Called when a stream error occurs.
-  ///
-  /// Override this method to handle specific error types.
-  /// Parameters:
-  /// - [error] - The error that occurred, typically a [TurboFirestoreException]
-  void onError(Object error) {
-    // Default implementation logs the error
-    _log.warning('Stream error occurred (onError not overridden): $error');
-  }
-  
-  /// Initializes the authentication state stream and data synchronization.
-  ///
-  /// Sets up listeners for user authentication changes and manages the data stream.
-  Future<void> tryInitialiseStream() async {
-    _log.info('Initialising TurboAuthSyncService stream..');
+/// Extension that adds read/get operations to [TurboFirestoreApi]
+extension TurboFirestoreGetApi<T> on TurboFirestoreApi<T> {
+  // Existing code...
+
+  /// Retrieves a document by its unique identifier
+  Future<TurboResponse<Map<String, dynamic>>> getById({
+    required String id,
+    String? collectionPathOverride,
+  }) async {
+    // Existing assertion code...
+    
     try {
-      _userSubscription ??= FirebaseAuth.instance.userChanges().listen(
-        (user) async {
-          final userId = user?.uid;
-          if (userId != null) {
-            this.cachedUserId = userId;
-            await onAuth?.call(user!);
-            _subscription ??= (await stream(user!)).listen(
-              (value) {
-                onData(value, user);
-              },
-              onError: (error, stackTrace) {
-                _log.error(
-                  'Stream error occurred inside of stream!',
-                  error: error,
-                  stackTrace: stackTrace,
-                );
-                
-                // Convert error to TurboFirestoreException if needed
-                final exception = error is TurboFirestoreException
-                    ? error
-                    : TurboFirestoreException.fromFirestoreException(
-                        error,
-                        stackTrace,
-                      );
-                
-                // Call onError handler
-                onError(exception);
-                
-                _tryRetry();
-              },
-              onDone: () => onDone(_nrOfRetry, _maxNrOfRetry),
-            );
-          } else {
-            cachedUserId = null;
-            await _subscription?.cancel();
-            _subscription = null;
-            onData(null, null);
-          }
-        },
+      // Existing operation code...
+    } catch (error, stackTrace) {
+      _log.error(
+        message: 'Unable to find document',
+        sensitiveData: SensitiveData(
+          path: collectionPathOverride ?? _collectionPath(),
+          id: id,
+        ),
+        error: error,
+        stackTrace: stackTrace,
       );
-    } catch (error, stack) {
-      _log.error('Stream error occurred while setting up stream!',
-          error: error, stackTrace: stack);
       
-      // Convert error to TurboFirestoreException if needed
-      final exception = error is TurboFirestoreException
-          ? error
-          : TurboFirestoreException.fromFirestoreException(
-              error,
-              stack,
-            );
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error, 
+        stackTrace,
+        path: collectionPathOverride ?? _collectionPath(),
+        query: 'getById(id: $id)',
+      );
       
-      // Call onError handler
-      onError(exception);
-      
-      _tryRetry();
+      return TurboResponse.fail(error: exception);
     }
   }
-  
-  // Existing methods...
+
+  /// Retrieves and converts a document by its unique identifier
+  Future<TurboResponse<T>> getByIdWithConverter({
+    required String id,
+    String? collectionPathOverride,
+  }) async {
+    // Existing assertion code...
+    
+    try {
+      // Existing operation code...
+    } catch (error, stackTrace) {
+      _log.error(
+        message: 'Unable to find document',
+        error: error,
+        stackTrace: stackTrace,
+        sensitiveData: SensitiveData(
+          path: collectionPathOverride ?? _collectionPath(),
+          id: id,
+        ),
+      );
+      
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error, 
+        stackTrace,
+        path: collectionPathOverride ?? _collectionPath(),
+        query: 'getByIdWithConverter(id: $id)',
+      );
+      
+      return TurboResponse.fail(error: exception);
+    }
+  }
+
+  // Apply similar changes to other get methods in this extension...
 }
 ```
 
-## Part 4: Update Derived Service Classes
+## Part 3: Update List API Extension
 
-Update `TurboDocumentService` and `TurboCollectionService` classes to inherit the `onError` method and provide better documentation:
+Modify the list operations in `turbo_firestore_list_api.dart`:
+
+```dart
+part of 'turbo_firestore_api.dart';
+
+/// Extension that adds list operations to [TurboFirestoreApi]
+extension TurboFirestoreListApi<T> on TurboFirestoreApi<T> {
+  // Existing code...
+
+  /// Lists documents matching a custom query
+  Future<TurboResponse<List<Map<String, dynamic>>>> listByQuery({
+    required CollectionReferenceDef<Map<String, dynamic>>
+        collectionReferenceQuery,
+    required String whereDescription,
+  }) async {
+    try {
+      // Existing operation code...
+    } catch (error, stackTrace) {
+      _log.error(
+        message: 'Unable to find documents with custom query',
+        sensitiveData: SensitiveData(
+          path: _collectionPath(),
+          whereDescription: whereDescription,
+        ),
+        error: error,
+        stackTrace: stackTrace,
+      );
+      
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error, 
+        stackTrace,
+        path: _collectionPath(),
+        query: whereDescription,
+      );
+      
+      return TurboResponse.fail(error: exception);
+    }
+  }
+
+  /// Lists and converts documents matching a custom query
+  Future<TurboResponse<List<T>>> listByQueryWithConverter({
+    required CollectionReferenceDef<T> collectionReferenceQuery,
+    required String whereDescription,
+  }) async {
+    try {
+      // Existing operation code...
+    } catch (error, stackTrace) {
+      _log.error(
+        message: 'Unable to find documents with custom query',
+        sensitiveData: SensitiveData(
+          path: _collectionPath(),
+          whereDescription: whereDescription,
+        ),
+        error: error,
+        stackTrace: stackTrace,
+      );
+      
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error, 
+        stackTrace,
+        path: _collectionPath(),
+        query: whereDescription,
+      );
+      
+      return TurboResponse.fail(error: exception);
+    }
+  }
+
+  // Apply similar changes to other list methods in this extension...
+}
+```
+
+## Part 4: Update Update API Extension
+
+Modify the update operations in `turbo_firestore_update_api.dart`:
+
+```dart
+part of 'turbo_firestore_api.dart';
+
+/// Extension that adds update operations to [TurboFirestoreApi]
+extension TurboFirestoreUpdateApi<T> on TurboFirestoreApi<T> {
+  // Existing code...
+
+  /// Updates an existing document in Firestore
+  Future<TurboResponse<DocumentReference>> updateDoc({
+    required TurboWriteable writeable,
+    required String id,
+    WriteBatch? writeBatch,
+    TurboTimestampType timestampType = TurboTimestampType.updatedAt,
+    String? collectionPathOverride,
+    Transaction? transaction,
+  }) async {
+    // Existing assertion code...
+    
+    try {
+      // Existing operation code...
+    } catch (error, stackTrace) {
+      if (transaction != null) {
+        // Wrap and rethrow for transactions
+        throw TurboFirestoreException.fromFirestoreException(
+          error, 
+          stackTrace, 
+          path: collectionPathOverride ?? _collectionPath(),
+          query: 'updateDoc(id: $id)',
+        );
+      }
+      
+      _log.error(
+        message: 'Unable to update document',
+        sensitiveData: SensitiveData(
+          path: collectionPathOverride ?? _collectionPath(),
+          id: id,
+          isBatch: writeBatch != null,
+          updateTimeStampType: timestampType,
+        ),
+        error: error,
+        stackTrace: stackTrace,
+      );
+      
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error, 
+        stackTrace,
+        path: collectionPathOverride ?? _collectionPath(),
+        query: 'updateDoc(id: $id)',
+      );
+      
+      return TurboResponse.fail(error: exception);
+    }
+  }
+
+  /// Updates documents using a batch operation
+  Future<TurboResponse<WriteBatchWithReference<Map<String, dynamic>>>>
+      updateDocInBatch({
+    required TurboWriteable writeable,
+    required String id,
+    WriteBatch? writeBatch,
+    TurboTimestampType timestampType = TurboTimestampType.updatedAt,
+    String? collectionPathOverride,
+  }) async {
+    // Existing assertion code...
+    
+    final TurboResponse<WriteBatchWithReference<Map<String, dynamic>>>?
+        invalidResponse = writeable.validate();
+    if (invalidResponse != null && invalidResponse.isFail) {
+      _log.warning(
+        message: 'TurboWriteable was invalid!',
+        sensitiveData: null,
+      );
+      return invalidResponse;
+    }
+    
+    try {
+      // Existing operation code...
+    } catch (error, stackTrace) {
+      _log.error(
+        message: 'Unable to update document with batch',
+        sensitiveData: SensitiveData(
+          path: collectionPathOverride ?? _collectionPath(),
+          id: id,
+        ),
+        error: error,
+        stackTrace: stackTrace,
+      );
+      
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error, 
+        stackTrace,
+        path: collectionPathOverride ?? _collectionPath(),
+        query: 'updateDocInBatch(id: $id)',
+      );
+      
+      return TurboResponse.fail(error: exception);
+    }
+  }
+}
+```
+
+## Part 5: Update Delete API Extension
+
+Modify the delete operations in `turbo_firestore_delete_api.dart`:
+
+```dart
+part of 'turbo_firestore_api.dart';
+
+/// Extension that adds delete operations to [TurboFirestoreApi]
+extension TurboFirestoreDeleteApi<T> on TurboFirestoreApi<T> {
+  // Existing code...
+
+  /// Deletes a document from Firestore
+  Future<TurboResponse> deleteDoc({
+    required String id,
+    WriteBatch? writeBatch,
+    String? collectionPathOverride,
+    Transaction? transaction,
+  }) async {
+    // Existing assertion code...
+    
+    try {
+      // Existing operation code...
+    } catch (error, stackTrace) {
+      if (transaction != null) {
+        // Wrap and rethrow for transactions
+        throw TurboFirestoreException.fromFirestoreException(
+          error, 
+          stackTrace, 
+          path: collectionPathOverride ?? _collectionPath(),
+          query: 'deleteDoc(id: $id)',
+        );
+      }
+      
+      _log.error(
+          message: 'Unable to delete document',
+          sensitiveData: SensitiveData(
+            path: collectionPathOverride ?? _collectionPath(),
+            id: id,
+          ),
+          error: error,
+          stackTrace: stackTrace);
+      
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error, 
+        stackTrace,
+        path: collectionPathOverride ?? _collectionPath(),
+        query: 'deleteDoc(id: $id)',
+      );
+      
+      return TurboResponse.fail(
+          error: exception, 
+          title: 'Error', 
+          message: 'Failed to delete document');
+    }
+  }
+
+  /// Deletes documents using a batch operation
+  Future<TurboResponse<WriteBatchWithReference<Map<String, dynamic>>>>
+      deleteDocInBatch({
+    required String id,
+    WriteBatch? writeBatch,
+    String? collectionPathOverride,
+  }) async {
+    // Existing assertion code...
+    
+    try {
+      // Existing operation code...
+    } catch (error, stackTrace) {
+      _log.error(
+        message: 'Unable to delete document with batch',
+        sensitiveData: SensitiveData(
+          path: collectionPathOverride ?? _collectionPath(),
+          id: id,
+        ),
+        error: error,
+        stackTrace: stackTrace,
+      );
+      
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error, 
+        stackTrace,
+        path: collectionPathOverride ?? _collectionPath(),
+        query: 'deleteDocInBatch(id: $id)',
+      );
+      
+      return TurboResponse.fail(error: exception);
+    }
+  }
+}
+```
+
+## Part 6: Update Search API Extension
+
+Modify the search operations in `turbo_firestore_search_api.dart`:
+
+```dart
+part of 'turbo_firestore_api.dart';
+
+/// Extension that adds search operations to [TurboFirestoreApi]
+extension TurboFirestoreSearchApi<T> on TurboFirestoreApi<T> {
+  // Existing code...
+
+  /// Searches for documents matching a search term
+  Future<TurboResponse<List<Map<String, dynamic>>>> listBySearchTerm({
+    required String searchTerm,
+    required String searchField,
+    required TurboSearchTermType searchTermType,
+    bool doSearchNumberEquivalent = false,
+    int? limit,
+  }) async {
+    try {
+      // Existing operation code...
+    } catch (error, stackTrace) {
+      _log.error(
+        message: 'Unable to find documents',
+        sensitiveData: SensitiveData(
+          path: _collectionPath(),
+          searchTerm: searchTerm,
+          searchField: searchField,
+          searchTermType: searchTermType,
+        ),
+        error: error,
+        stackTrace: stackTrace,
+      );
+      
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error, 
+        stackTrace,
+        path: _collectionPath(),
+        query: 'listBySearchTerm(searchTerm: $searchTerm, searchField: $searchField, searchTermType: $searchTermType)',
+      );
+      
+      return TurboResponse.fail(error: exception);
+    }
+  }
+
+  /// Searches for documents with type conversion
+  Future<TurboResponse<List<T>>> listBySearchTermWithConverter({
+    required String searchTerm,
+    required String searchField,
+    required TurboSearchTermType searchTermType,
+    bool doSearchNumberEquivalent = false,
+    int? limit,
+  }) async {
+    try {
+      // Existing operation code...
+    } catch (error, stackTrace) {
+      _log.error(
+          message: 'Unable to find documents',
+          sensitiveData: SensitiveData(
+            path: _collectionPath(),
+            searchTerm: searchTerm,
+            searchField: searchField,
+            searchTermType: searchTermType,
+          ),
+          error: error,
+          stackTrace: stackTrace);
+      
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error, 
+        stackTrace,
+        path: _collectionPath(),
+        query: 'listBySearchTermWithConverter(searchTerm: $searchTerm, searchField: $searchField, searchTermType: $searchTermType)',
+      );
+      
+      return TurboResponse.fail(error: exception);
+    }
+  }
+}
+```
+
+## Part 7: Update Transaction Handling in TurboFirestoreApi
+
+Modify the transaction handling in the main `TurboFirestoreApi` class:
+
+```dart
+class TurboFirestoreApi<T> {
+  // Existing code...
+
+  /// Helper method to run a [Transaction] from [_firebaseFirestore].
+  Future<E> runTransaction<E>(
+      TransactionHandler<E> transactionHandler, {
+        Duration timeout = const Duration(seconds: 30),
+        int maxAttempts = 5,
+      }) {
+    return _firebaseFirestore.runTransaction(
+      (transaction) {
+        try {
+          return transactionHandler(transaction);
+        } catch (error, stackTrace) {
+          // If error is already a TurboFirestoreException, rethrow it
+          if (error is TurboFirestoreException) {
+            throw error;
+          }
+          
+          // Convert error to TurboFirestoreException
+          throw TurboFirestoreException.fromFirestoreException(
+            error, 
+            stackTrace,
+            path: _collectionPath(),
+            query: 'Transaction operation',
+          );
+        }
+      },
+      timeout: timeout,
+      maxAttempts: maxAttempts,
+    ).catchError((error, stackTrace) {
+      // If error is already a TurboFirestoreException, rethrow it
+      if (error is TurboFirestoreException) {
+        throw error;
+      }
+      
+      // Convert error to TurboFirestoreException
+      throw TurboFirestoreException.fromFirestoreException(
+        error, 
+        stackTrace,
+        path: _collectionPath(),
+        query: 'Transaction operation',
+      );
+    });
+  }
+}
+```
+
+## Part 8: Update Service Classes to Propagate Typed Exceptions
+
+Modify the service classes to properly handle and propagate the typed exceptions:
+
+1. First, update `TurboDocumentService` to handle Firestore exceptions:
 
 ```dart
 // Update in lib/services/turbo_document_service.dart
@@ -481,37 +631,45 @@ API extends TurboFirestoreApi<T>> extends TurboAuthSyncService<T?>
     with Loglytics {
   // Existing code...
   
-  /// Called when a stream error occurs.
-  ///
-  /// Override this method to handle specific Firestore error types.
-  ///
-  /// Example:
-  /// ```dart
-  /// @override
-  /// void onError(Object error) {
-  ///   if (error is TurboFirestorePermissionDeniedException) {
-  ///     // Handle permission errors
-  ///     showPermissionErrorDialog();
-  ///   } else {
-  ///     // Handle other errors
-  ///     showGenericErrorMessage();
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// Parameters:
-  /// - [error] - The error that occurred, typically a [TurboFirestoreException]
-  @override
-  void onError(Object error) {
-    log.warning('Document service stream error: $error');
-    super.onError(error);
+  /// Deletes a document both locally and from Firestore.
+  @protected
+  Future<TurboResponse> deleteDoc({
+    required String id,
+    bool doNotifyListeners = true,
+    Transaction? transaction,
+  }) async {
+    try {
+      // Existing operation code...
+    } catch (error, stackTrace) {
+      if (transaction != null) rethrow;
+      log.error(
+        '$error caught while deleting doc',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      
+      // If error is already a TurboFirestoreException, use it
+      final exception = error is TurboFirestoreException
+          ? error
+          : TurboFirestoreException.fromFirestoreException(
+              error, 
+              stackTrace,
+              path: api._collectionPath(),
+              query: 'deleteDoc(id: $id)',
+            );
+      
+      // Call onError
+      onError(exception);
+      
+      return TurboResponse.fail(error: exception);
+    }
   }
-  
-  // Existing code...
+
+  // Apply similar changes to other CRUD methods in this class...
 }
 ```
 
-Similarly, update the `TurboCollectionService` class:
+2. Next, update `TurboCollectionService` to handle Firestore exceptions:
 
 ```dart
 // Update in lib/services/turbo_collection_service.dart
@@ -521,63 +679,56 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
     with Loglytics {
   // Existing code...
   
-  /// Called when a stream error occurs.
-  ///
-  /// Override this method to handle specific Firestore error types.
-  ///
-  /// Example:
-  /// ```dart
-  /// @override
-  /// void onError(Object error) {
-  ///   if (error is TurboFirestorePermissionDeniedException) {
-  ///     // Handle permission errors
-  ///     showPermissionErrorDialog();
-  ///   } else if (error is TurboFirestoreUnavailableException) {
-  ///     // Handle service unavailability
-  ///     showOfflineMessage();
-  ///   } else {
-  ///     // Handle other errors
-  ///     showGenericErrorMessage();
-  ///   }
-  /// }
-  /// ```
-  ///
-  /// Parameters:
-  /// - [error] - The error that occurred, typically a [TurboFirestoreException]
-  @override
-  void onError(Object error) {
-    log.warning('Collection service stream error: $error');
-    super.onError(error);
+  /// Updates a document both locally and in Firestore.
+  @protected
+  Future<TurboResponse<T>> updateDoc({
+    Transaction? transaction,
+    required String id,
+    required UpdateDocDef<T> doc,
+    TurboWriteable Function(T doc)? remoteUpdateRequestBuilder,
+    bool doNotifyListeners = true,
+  }) async {
+    try {
+      // Existing operation code...
+    } catch (error, stackTrace) {
+      if (transaction != null) rethrow;
+      log.error(
+        '$error caught while updating doc',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      
+      // If error is already a TurboFirestoreException, use it
+      final exception = error is TurboFirestoreException
+          ? error
+          : TurboFirestoreException.fromFirestoreException(
+              error, 
+              stackTrace,
+              path: api._collectionPath(),
+              query: 'updateDoc(id: $id)',
+            );
+      
+      // Call onError
+      onError(exception);
+      
+      return TurboResponse.fail(error: exception);
+    }
   }
-  
-  // Existing code...
+
+  // Apply similar changes to other CRUD methods in this class...
 }
 ```
 
-## Part 5: Export the Exception Class in Library
+## Part 9: Update Error Handling in Documentation
 
-Update the main library file to export our new exception class:
-
-```dart
-// Update lib/turbo_firestore_api.dart
-
-// Existing exports...
-
-/// Exception types for error handling
-export 'exceptions/turbo_firestore_exception.dart';
-export 'exceptions/invalid_json_exception.dart';
-
-// Existing exports...
-```
-
-## Part 6: Document Usage in README.md
-
-Add documentation on using the new exception handling in the README.md:
+Update the documentation example in an existing documentation file or README to show error handling with the new exception types for CRUD operations:
 
 ```markdown
 ## 🛡️ Error Handling
 
-Turbo Firestore API provides comprehensive error handling through `TurboFirestoreException`, making it easy to handle different types of Firestore errors:
+Turbo Firestore API provides comprehensive error handling through `TurboFirestoreException`, making it easy to handle different types of Firestore errors with both streaming and CRUD operations:
+
+### Stream Error Handling
 
 ```dart
 class UsersService extends TurboCollectionService<User, UsersApi> {
@@ -594,9 +745,54 @@ class UsersService extends TurboCollectionService<User, UsersApi> {
       print('Service unavailable: ${error.message}');
     } else if (error is TurboFirestoreException) {
       print('Firestore error: ${error.message} (${error.code})');
+    }
+  }
+}
+```
+
+### CRUD Operation Error Handling
+
+```dart
+// Create a new user with error handling
+final response = await usersService.createUser(name: 'John', age: 30);
+response.when(
+  success: (user) {
+    print('User created: ${user.name}');
+  },
+  fail: (error) {
+    if (error is TurboFirestorePermissionDeniedException) {
+      print('Permission denied: ${error.message}');
+      print('Path: ${error.path}');
+    } else if (error is TurboFirestoreAlreadyExistsException) {
+      print('User already exists: ${error.message}');
+    } else if (error is TurboFirestoreException) {
+      print('Firestore error: ${error.message} (${error.code})');
     } else {
       print('Unknown error: $error');
     }
+  },
+);
+```
+
+### Transaction Error Handling
+
+```dart
+try {
+  await api.runTransaction((transaction) async {
+    // Perform transaction operations
+    await service.updateUserInTransaction(
+      transaction: transaction,
+      userId: 'user-123',
+      name: 'Updated Name',
+    );
+    return true;
+  });
+  print('Transaction completed successfully');
+} catch (error) {
+  if (error is TurboFirestorePermissionDeniedException) {
+    print('Permission denied: ${error.message}');
+  } else if (error is TurboFirestoreException) {
+    print('Firestore error: ${error.message} (${error.code})');
   }
 }
 ```
@@ -613,11 +809,13 @@ The `TurboFirestoreException` class hierarchy includes:
 
 ## Conclusion
 
-This implementation plan introduces a comprehensive exception handling system for Firestore streams:
+This implementation plan extends the `TurboFirestoreException` handling to all CRUD operations in the Turbo Firestore API, ensuring consistent error handling throughout the package. 
 
-1. A sealed class hierarchy for different Firestore error types
-2. Exception capture and conversion in streaming APIs
-3. Error handling callbacks in service classes
-4. Documentation and examples
+The implementation:
+1. Catches and converts Firestore errors to typed `TurboFirestoreException` instances
+2. Provides relevant context information for each error
+3. Propagates errors correctly in transactions
+4. Updates service classes to handle and expose the typed exceptions
+5. Documents the error handling capabilities
 
-By implementing these changes, developers will have better error handling capabilities with context-rich exceptions and the ability to provide custom error handling logic in their services.
+By implementing these changes, developers will have a consistent and type-safe way to handle Firestore errors throughout all operations, improving error handling, debugging, and user experience in their applications.

@@ -185,7 +185,16 @@ extension TurboFirestoreSearchApi<T> on TurboFirestoreApi<T> {
         error: error,
         stackTrace: stackTrace,
       );
-      return TurboResponse.fail(error: error);
+
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error,
+        stackTrace,
+        path: _collectionPath(),
+        query: 'search(searchTerm: $searchTerm, searchField: $searchField)',
+      );
+
+      return TurboResponse.fail(error: exception);
     }
   }
 
@@ -343,7 +352,16 @@ extension TurboFirestoreSearchApi<T> on TurboFirestoreApi<T> {
           ),
           error: error,
           stackTrace: stackTrace);
-      return TurboResponse.fail(error: error);
+
+      // Convert to TurboFirestoreException and wrap in TurboResponse
+      final exception = TurboFirestoreException.fromFirestoreException(
+        error,
+        stackTrace,
+        path: _collectionPath(),
+        query: 'search(searchTerm: $searchTerm, searchField: $searchField)',
+      );
+
+      return TurboResponse.fail(error: exception);
     }
   }
 }

@@ -6,6 +6,7 @@ import 'package:turbo_firestore_api/abstracts/turbo_writeable.dart';
 import 'package:turbo_firestore_api/enums/turbo_search_term_type.dart';
 import 'package:turbo_firestore_api/enums/turbo_timestamp_type.dart';
 import 'package:turbo_firestore_api/exceptions/invalid_json_exception.dart';
+import 'package:turbo_firestore_api/exceptions/turbo_firestore_exception.dart';
 import 'package:turbo_firestore_api/extensions/turbo_map_extension.dart';
 import 'package:turbo_firestore_api/models/sensitive_data.dart';
 import 'package:turbo_firestore_api/models/write_batch_with_reference.dart';

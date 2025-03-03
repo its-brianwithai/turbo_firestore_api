@@ -1,0 +1,63 @@
+# 📋 pewPewCLI Templates Configuration
+# This file defines core settings and templates used across pewPewCLI features.
+# Configure these settings to match your project's specific requirements.
+
+# 🏷️ Project Configuration
+project:
+  # Project Key Configuration
+  # Used to prefix commit messages and identify project-specific items
+  #
+  # Format Options:
+  # - Simple key: [PEW]
+  # - With number: [PEW-123]
+  # - Multiple parts: [TEAM-PROJECT-123]
+  #
+  # Examples:
+  # key: PEW          # Commits: [PEW] feat: add new feature
+  # key: JIRA-123       # Commits: [JIRA-123] fix: resolve bug
+  # key: TEAM-PROJ-456  # Commits: [TEAM-PROJ-456] docs: update readme
+  key: "PEW"
+
+# 🤖 AI Configuration
+ai:
+  # Gemini Model Selection
+  # Choose the AI model for generating commit messages and other AI features
+  #
+  # Available Models:
+  # - gemini-pro: 
+  #   • Best for general-purpose text generation
+  #   • More detailed and nuanced responses
+  #   • Slightly slower processing time
+  #
+  # - gemini-2.0-flash:
+  #   • Optimized for quick responses
+  #   • More concise output
+  #   • Faster processing time
+  #   • Recommended for commit messages
+  #
+  # Performance Considerations:
+  # - Use gemini-2.0-flash for faster commit message generation
+  # - Use gemini-pro when more detailed analysis is needed
+  #
+  # Example:
+  # model: gemini-2.0-flash    # For quick commit messages
+  model: "gemini-2.0-flash"
+
+# 📝 Logging Configuration
+logs:
+  # Maximum Terminal Output Length
+  # Controls how much of the terminal output is logged for each command
+  #
+  # Values:
+  # - 0: Disable terminal output logging (only log command and result)
+  # - 100: Default, logs up to 100 characters of terminal output
+  # - Any positive number: Logs that many characters of terminal output
+  #
+  # Examples:
+  # max_terminal_output: 0     # No terminal output logged
+  # max_terminal_output: 50    # Log first 50 characters
+  # max_terminal_output: 200   # Log first 200 characters
+  max_terminal_output: 100
+
+taskflow:
+  path: .pew/taskflows/pewpewflow.yaml

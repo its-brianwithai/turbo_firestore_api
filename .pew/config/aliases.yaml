@@ -1,0 +1,27 @@
+# 📚 pewPewCLI Alias Configuration Guide
+# Use this file to define your custom command aliases
+# Format:
+# alias_name:
+#   - "command1"
+#   - "command2"
+#   - "command3"
+
+build:
+  - "echo 'Edit .pew/config/aliases.yaml'"
+
+test:
+  - "echo 'Edit .pew/config/aliases.yaml'"
+
+fp:
+  - 'pew test'
+  - 'pew build'
+  - "pew push -f"
+
+fix:
+  - "echo 'Edit .pew/config/aliases.yaml'"
+
+analyze:
+  - "echo 'Edit .pew/config/aliases.yaml'"
+
+publish:
+  - "echo 'Edit .pew/config/aliases.yaml'"

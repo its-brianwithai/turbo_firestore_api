@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:loglytics/loglytics.dart';
 import 'package:turbo_firestore_api/mixins/turbo_exception_handler.dart';
+import 'package:turbo_firestore_api/exceptions/turbo_firestore_exception.dart';
 
 /// A service that synchronizes data with Firebase Authentication state changes.
 ///
@@ -33,6 +34,16 @@ abstract class TurboAuthSyncService<StreamValue> with TurboExceptionHandler {
   // 🧩 DEPENDENCIES -------------------------------------------------------------------------- \\
   // 🎬 INIT & DISPOSE ------------------------------------------------------------------------ \\
 
+  /// Called when a stream error occurs.
+  ///
+  /// Override this method to handle specific error types.
+  /// Parameters:
+  /// - [error] - The Firestore exception that occurred
+  void onError(TurboFirestoreException error) {
+    // Default implementation logs the error
+    _log.warning('Stream error occurred (onError not overridden): $error');
+  }
+
   /// Initializes the authentication state stream and data synchronization.
   ///
   /// Sets up listeners for user authentication changes and manages the data stream.
@@ -55,6 +66,18 @@ abstract class TurboAuthSyncService<StreamValue> with TurboExceptionHandler {
                   error: error,
                   stackTrace: stackTrace,
                 );
+
+                // Convert error to TurboFirestoreException if needed
+                final exception = error is TurboFirestoreException
+                    ? error
+                    : TurboFirestoreException.fromFirestoreException(
+                        error,
+                        stackTrace,
+                      );
+
+                // Call onError handler
+                onError(exception);
+
                 _tryRetry();
               },
               onDone: () => onDone(_nrOfRetry, _maxNrOfRetry),
@@ -69,6 +92,18 @@ abstract class TurboAuthSyncService<StreamValue> with TurboExceptionHandler {
       );
     } catch (error, stack) {
       _log.error('Stream error occurred while setting up stream!', error: error, stackTrace: stack);
+
+      // Convert error to TurboFirestoreException if needed
+      final exception = error is TurboFirestoreException
+          ? error
+          : TurboFirestoreException.fromFirestoreException(
+              error,
+              stack,
+            );
+
+      // Call onError handler
+      onError(exception);
+
       _tryRetry();
     }
   }

@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:turbo_firestore_api/constants/k_error_codes.dart';
-import 'package:turbo_firestore_api/models/sensitive_data.dart';
 
 /// A sealed class for Firestore exceptions.
 ///
@@ -171,7 +170,8 @@ sealed class TurboFirestoreException implements Exception {
 }
 
 /// Exception thrown when permission is denied for a Firestore operation.
-final class TurboFirestorePermissionDeniedException extends TurboFirestoreException {
+final class TurboFirestorePermissionDeniedException
+    extends TurboFirestoreException {
   /// Creates a new permission denied exception.
   const TurboFirestorePermissionDeniedException({
     required super.message,
@@ -186,7 +186,8 @@ final class TurboFirestorePermissionDeniedException extends TurboFirestoreExcept
 
   @override
   String toString() {
-    final buffer = StringBuffer('TurboFirestorePermissionDeniedException: $message');
+    final buffer =
+        StringBuffer('TurboFirestorePermissionDeniedException: $message');
     buffer.write(' (code: $code)');
     if (path != null) {
       buffer.write(' (path: $path)');
@@ -264,7 +265,8 @@ final class TurboFirestoreNotFoundException extends TurboFirestoreException {
 }
 
 /// Exception thrown when a document already exists.
-final class TurboFirestoreAlreadyExistsException extends TurboFirestoreException {
+final class TurboFirestoreAlreadyExistsException
+    extends TurboFirestoreException {
   /// Creates a new already exists exception.
   const TurboFirestoreAlreadyExistsException({
     required super.message,
@@ -278,7 +280,8 @@ final class TurboFirestoreAlreadyExistsException extends TurboFirestoreException
 
   @override
   String toString() {
-    final buffer = StringBuffer('TurboFirestoreAlreadyExistsException: $message');
+    final buffer =
+        StringBuffer('TurboFirestoreAlreadyExistsException: $message');
     buffer.write(' (code: $code)');
     if (path != null) {
       buffer.write(' (path: $path)');
@@ -325,7 +328,8 @@ final class TurboFirestoreCancelledException extends TurboFirestoreException {
 }
 
 /// Exception thrown when a deadline is exceeded.
-final class TurboFirestoreDeadlineExceededException extends TurboFirestoreException {
+final class TurboFirestoreDeadlineExceededException
+    extends TurboFirestoreException {
   /// Creates a new deadline exceeded exception.
   const TurboFirestoreDeadlineExceededException({
     required super.message,
@@ -338,7 +342,8 @@ final class TurboFirestoreDeadlineExceededException extends TurboFirestoreExcept
 
   @override
   String toString() {
-    final buffer = StringBuffer('TurboFirestoreDeadlineExceededException: $message');
+    final buffer =
+        StringBuffer('TurboFirestoreDeadlineExceededException: $message');
     buffer.write(' (code: $code)');
     if (path != null) {
       buffer.write(' (path: $path)');

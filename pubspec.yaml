@@ -15,18 +15,9 @@ dependencies:
     sdk: flutter
   rxdart: ^0.28.0
 
-  loglytics:
-    git:
-      url: git@github.com:ultrawideturbodev/loglytics.git
-      ref: dev
-  turbo_response:
-    git:
-      url: git@github.com:ultrawideturbodev/turbo_response.git
-      ref: dev
-  informers:
-    git:
-      url: git@github.com:ultrawideturbodev/informers.git
-      ref: dev
+  loglytics: ^0.15.0
+  turbo_response: ^0.2.6
+  informers: ^0.0.3+2
 
 dev_dependencies:
   fake_cloud_firestore: ^3.1.0

@@ -16,7 +16,7 @@ project:
   # key: PEW          # Commits: [PEW] feat: add new feature
   # key: JIRA-123       # Commits: [JIRA-123] fix: resolve bug
   # key: TEAM-PROJ-456  # Commits: [TEAM-PROJ-456] docs: update readme
-  key: "PEW"
+  key: "TURBO"
 
 # 🤖 AI Configuration
 ai:

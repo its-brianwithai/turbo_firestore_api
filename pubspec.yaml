@@ -17,15 +17,15 @@ dependencies:
 
   loglytics:
     git:
-      url: git@github.com:ultrawideturbodev/loglytics.git
+      url: https://github.com/ultrawideturbodev/loglytics.git
       ref: dev
   turbo_response:
     git:
-      url: git@github.com:ultrawideturbodev/turbo_response.git
+      url: https://github.com/ultrawideturbodev/turbo_response.git
       ref: dev
   informers:
     git:
-      url: git@github.com:ultrawideturbodev/informers.git
+      url: https://github.com/ultrawideturbodev/informers.git
       ref: dev
 
 dev_dependencies:

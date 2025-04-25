@@ -1,4 +1,9 @@
-## 🚀 Version 0.7.0 (March 2024)
+## 🚀 Version 0.7.1 (April 2025)
+
+* **🛠️ Improvement:** Exposed `docsPerIdInformer` as @protected in `TurboFirestoreApi` for better access control when overriding methods.
+* **🛠️ Improvement:** Updated dependencies to latest versions.
+
+## 🚀 Version 0.7.0 (March 2025)
 
 ### ✨ Features:
 * Enhanced error handling using `TurboFirestoreException.fromFirestoreException` for more structured error responses across all API methods
@@ -8,13 +13,13 @@
 * Improved code consistency across API implementations
 * Added detailed examples for exception handling
 
-## 🚀 Version 0.6.1 (January 2024)
+## 🚀 Version 0.6.1 (January 2025)
 
 ### 🛠️ Improvements:
 * Updated sync services to use `upsertLocalDoc` instead of `updateLocalDoc` for better consistency
 * Enhanced error handling across multiple API methods using `TurboFirestoreException.fromFirestoreException` for more structured error responses
 
-## 🚀 Version 0.6.0 (January 2024)
+## 🚀 Version 0.6.0 (January 2025)
 ---
 ### ✨ Features:
 * Added `upsertLocalDocs` method for consistent batch local operations
@@ -26,25 +31,25 @@
 ### 🐛 Bug fixes:
 * Fixed incorrect document creation skipping in upsert operations
 
-## 🚀 Version 0.5.0 (January 2024)
+## 🚀 Version 0.5.0 (January 2025)
 
 * **💔 Breaking:** Removed `templateBlockNotify`.
 
-## 🚀 Version 0.4.2 (January 2024)
+## 🚀 Version 0.4.2 (January 2025)
 
 * **🛠️ Improvement:** Add id getter.
 
-## 🚀 Version 0.4.1 (January 2024)
+## 🚀 Version 0.4.1 (January 2025)
 
 * **🛠️ Improvement:** Made `TurboAuthVars.userId` non-nullable for better type safety (defaults to `kValuesNoAuthId`)
 * **🛠️ Improvement:** Added `UpdateDocDef` type definition export
 
-## 🚀 Version 0.4.0 (January 2024)
+## 🚀 Version 0.4.0 (January 2025)
 
 * **💔 Breaking:** Renamed `createDoc` and `updateDoc` named parameter names to doc.
 * **🛠️ Improvement:** Update readme.
 
-## 🚀 Version 0.3.0 (January 2024)
+## 🚀 Version 0.3.0 (January 2025)
 ---
 ### 💔 Breaking:
 * Renamed `vars()` to `turboVars()` for better clarity and consistency

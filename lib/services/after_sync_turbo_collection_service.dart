@@ -43,7 +43,7 @@ abstract class AfSyncTurboCollectionService<T extends TurboWriteableId<String>,
       final docs = value ?? [];
       if (user != null) {
         log.debug('Updating docs for user ${user.uid}');
-        _docsPerId.update(
+        docsPerIdInformer.update(
           docs.toIdMap((element) => element.id),
         );
         _isReady.completeIfNotComplete();
@@ -51,7 +51,7 @@ abstract class AfSyncTurboCollectionService<T extends TurboWriteableId<String>,
         log.debug('Updated ${docs.length} docs');
       } else {
         log.debug('User is null, clearing docs');
-        _docsPerId.update(
+        docsPerIdInformer.update(
           {},
         );
         afterSyncNotifyUpdate([]);

@@ -55,7 +55,7 @@ abstract class BeAfSyncTurboCollectionService<
       if (user != null) {
         log.debug('Updating docs for user ${user.uid}');
         beforeSyncNotifyUpdate(docs);
-        _docsPerId.update(
+        docsPerIdInformer.update(
           docs.toIdMap((element) => element.id),
         );
         _isReady.completeIfNotComplete();
@@ -64,7 +64,7 @@ abstract class BeAfSyncTurboCollectionService<
       } else {
         log.debug('User is null, clearing docs');
         beforeSyncNotifyUpdate([]);
-        _docsPerId.update(
+        docsPerIdInformer.update(
           {},
         );
         afterSyncNotifyUpdate([]);

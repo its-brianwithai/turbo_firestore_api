@@ -79,11 +79,11 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
 
   /// Disposes of the service by cleaning up resources.
   ///
-  /// Disposes the [_docsPerId] informer and completes the [_isReady] completer
+  /// Disposes the [docsPerIdInformer] informer and completes the [_isReady] completer
   /// if not already completed. Then calls the parent dispose method.
   @override
   Future<void> dispose() {
-    _docsPerId.dispose();
+    docsPerIdInformer.dispose();
     _isReady.completeIfNotComplete();
     return super.dispose();
   }
@@ -101,14 +101,14 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
       final docs = value ?? [];
       if (user != null) {
         log.debug('Updating docs for user ${user.uid}');
-        _docsPerId.update(
+        docsPerIdInformer.update(
           docs.toIdMap((element) => element.id),
         );
         _isReady.completeIfNotComplete();
         log.debug('Updated ${docs.length} docs');
       } else {
         log.debug('User is null, clearing docs');
-        _docsPerId.update(
+        docsPerIdInformer.update(
           {},
         );
       }
@@ -147,7 +147,8 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   // 🎩 STATE --------------------------------------------------------------------------------- \\
 
   /// Local state for documents, indexed by their IDs.
-  final _docsPerId = Informer<Map<String, T>>({}, forceUpdate: true);
+  @protected
+  final docsPerIdInformer = Informer<Map<String, T>>({}, forceUpdate: true);
 
   /// Completer that resolves when the service is ready.
   final _isReady = Completer();
@@ -163,31 +164,31 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
       ) as V;
 
   /// Value listenable for the document collection state.
-  ValueListenable<Map<String, T>> get docsPerId => _docsPerId;
+  ValueListenable<Map<String, T>> get docsPerId => docsPerIdInformer;
 
   /// Whether the collection has any documents.
-  bool get hasDocs => _docsPerId.value.isNotEmpty;
+  bool get hasDocs => docsPerIdInformer.value.isNotEmpty;
 
   /// Whether a document with the given ID exists.
-  bool exists(String id) => _docsPerId.value.containsKey(id);
+  bool exists(String id) => docsPerIdInformer.value.containsKey(id);
 
   /// Finds a document by its ID. Throws if not found.
-  T findById(String id) => _docsPerId.value[id]!;
+  T findById(String id) => docsPerIdInformer.value[id]!;
 
   /// Finds a document by its ID. Returns null if not found.
-  T? tryFindById(String? id) => _docsPerId.value[id];
+  T? tryFindById(String? id) => docsPerIdInformer.value[id];
 
   /// Future that completes when the service is ready to use.
   Future get isReady => _isReady.future;
 
   /// Listenable for the document collection state.
-  Listenable get listenable => _docsPerId;
+  Listenable get listenable => docsPerIdInformer;
 
   // 🏗️ HELPERS ------------------------------------------------------------------------------- \\
   // ⚙️ LOCAL MUTATORS ------------------------------------------------------------------------ \\
 
   /// Forces a rebuild of the local state.
-  void rebuild() => _docsPerId.rebuild();
+  void rebuild() => docsPerIdInformer.rebuild();
 
   /// Deletes a document from local state.
   ///
@@ -200,7 +201,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
     bool doNotifyListeners = true,
   }) {
     log.debug('Deleting local doc with id: $id');
-    _docsPerId.updateCurrent(
+    docsPerIdInformer.updateCurrent(
       (value) => value..remove(id),
       doNotifyListeners: doNotifyListeners,
     );
@@ -220,7 +221,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
     for (final id in ids) {
       deleteLocalDoc(id: id, doNotifyListeners: false);
     }
-    if (doNotifyListeners) _docsPerId.rebuild();
+    if (doNotifyListeners) docsPerIdInformer.rebuild();
   }
 
   /// Updates an existing document in local state.
@@ -240,7 +241,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
       findById(id),
       turboVars(id: id),
     );
-    _docsPerId.updateCurrent(
+    docsPerIdInformer.updateCurrent(
       (value) => value
         ..update(
           pDoc.id,
@@ -266,7 +267,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
       turboVars(),
     );
     log.debug('Creating local doc with id: ${pDoc.id}');
-    _docsPerId.updateCurrent(
+    docsPerIdInformer.updateCurrent(
       (value) => value..[pDoc.id] = pDoc,
       doNotifyListeners: doNotifyListeners,
     );
@@ -291,7 +292,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
       final pDoc = updateLocalDoc(id: id, doc: doc, doNotifyListeners: false);
       pDocs.add(pDoc);
     }
-    if (doNotifyListeners) _docsPerId.rebuild();
+    if (doNotifyListeners) docsPerIdInformer.rebuild();
     return pDocs;
   }
 
@@ -312,7 +313,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
       final pDoc = createLocalDoc(doc: doc, doNotifyListeners: false);
       pDocs.add(pDoc);
     }
-    if (doNotifyListeners) _docsPerId.rebuild();
+    if (doNotifyListeners) docsPerIdInformer.rebuild();
     return pDocs;
   }
 
@@ -344,7 +345,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
       );
       pDocs.add(pDoc);
     }
-    if (doNotifyListeners) _docsPerId.rebuild();
+    if (doNotifyListeners) docsPerIdInformer.rebuild();
     return pDocs;
   }
 
@@ -368,7 +369,7 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   }) {
     log.debug('Upserting local doc with id: $id');
     final pDoc = doc(tryFindById(id), turboVars(id: id));
-    _docsPerId.updateCurrent(
+    docsPerIdInformer.updateCurrent(
       (value) => value..[pDoc.id] = pDoc,
       doNotifyListeners: doNotifyListeners,
     );

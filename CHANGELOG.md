@@ -1,4 +1,4 @@
-## 🚀 Version 0.7.4 (May 2025)
+## 🚀 Version 0.8.0 (May 2025)
 
 * **🛠️ Improvement:** Clean release with all dependencies updated and proper git state
 

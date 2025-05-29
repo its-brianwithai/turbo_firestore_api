@@ -1,3 +1,12 @@
+## 🚀 Version 0.7.2 (May 2025)
+
+* **🛠️ Improvement:** Comprehensive dependency update to latest compatible versions
+* **🛠️ Improvement:** Updated loglytics dependency to version 0.16.0
+* **🛠️ Improvement:** Updated repository URLs to use the correct GitHub username (its-brianwithai)
+* **🛠️ Improvement:** Updated flutter_lints to version 6.0.0
+* **🛠️ Improvement:** Updated all Firebase dependencies to latest versions
+* **🛠️ Improvement:** Verified compatibility with Flutter 3.32.0 and Dart 3.8.0
+
 ## 🚀 Version 0.7.1 (April 2025)
 
 * **🛠️ Improvement:** Exposed `docsPerIdInformer` as @protected in `TurboFirestoreApi` for better access control when overriding methods.

@@ -1,3 +1,7 @@
+## 🚀 Version 0.7.3 (May 2025)
+
+* **🛠️ Improvement:** Clean release with all dependencies updated and proper git state
+
 ## 🚀 Version 0.7.2 (May 2025)
 
 * **🛠️ Improvement:** Comprehensive dependency update to latest compatible versions

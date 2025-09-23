@@ -38,7 +38,7 @@ abstract class BeSyncTurboDocumentService<T extends TurboWriteableId<String>,
   /// - [value] - The new document value from Firestore
   /// - [user] - The current Firebase user
   @override
-  void Function(T? value, User? user) get onData {
+  Future<void> Function(T? value, User? user) get onData {
     return (value, user) async {
       if (user != null) {
         log.debug('Updating doc for user ${user.uid}');

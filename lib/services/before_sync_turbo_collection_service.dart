@@ -38,7 +38,7 @@ abstract class BeSyncTurboCollectionService<T extends TurboWriteableId<String>,
   /// - [value] - The new document values from Firestore
   /// - [user] - The current Firebase user
   @override
-  void Function(List<T>? value, User? user) get onData {
+  Future<void> Function(List<T>? value, User? user) get onData {
     return (value, user) async {
       final docs = value ?? [];
       if (user != null) {

@@ -57,8 +57,8 @@ abstract class TurboAuthSyncService<StreamValue> with TurboExceptionHandler {
             cachedUserId = userId;
             await onAuth?.call(user!);
             _subscription ??= (await stream(user!)).listen(
-              (value) {
-                onData(value, user);
+              (value) async {
+                await onData(value, user);
               },
               onError: (error, stackTrace) {
                 _log.error(
@@ -86,7 +86,7 @@ abstract class TurboAuthSyncService<StreamValue> with TurboExceptionHandler {
             cachedUserId = null;
             await _subscription?.cancel();
             _subscription = null;
-            onData(null, null);
+            await onData(null, null);
           }
         },
       );
@@ -159,7 +159,7 @@ abstract class TurboAuthSyncService<StreamValue> with TurboExceptionHandler {
   FutureOr<Stream<StreamValue?>> Function(User user) get stream;
 
   /// Handles data updates from the stream.
-  void Function(StreamValue? value, User? user) get onData;
+  Future<void> Function(StreamValue? value, User? user) get onData;
 
   /// Called when a user is authenticated.
   FutureOr<void> Function(User user)? onAuth;

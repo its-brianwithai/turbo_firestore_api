@@ -96,8 +96,8 @@ abstract class TurboCollectionService<T extends TurboWriteableId<String>,
   /// Updates the local state when new data arrives from Firestore.
   /// If [user] is null, clears the local state.
   @override
-  void Function(List<T>? value, User? user) get onData {
-    return (value, user) {
+  Future<void> Function(List<T>? value, User? user) get onData {
+    return (value, user) async {
       final docs = value ?? [];
       if (user != null) {
         log.debug('Updating docs for user ${user.uid}');

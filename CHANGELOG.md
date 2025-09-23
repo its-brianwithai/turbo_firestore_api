@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## 🚀 Version 0.8.1 (September 2025)
+
+### 🛠️ Improvements:
+* **Updated dependencies to latest versions** - Cloud Firestore to ^6.0.2, Firebase Auth to ^6.1.0, loglytics to ^0.16.1, and fake_cloud_firestore to ^4.0.0
+* **Enhanced compatibility** - Better support for latest Firebase SDK features and improvements
+
 ## 🚀 Version 0.8.0 (September 2025)
 
 ### 💔 Breaking:

@@ -20,7 +20,7 @@ abstract class AfSyncTurboDocumentService<T extends TurboWriteableId<String>,
   ///
   /// Parameters:
   /// - [doc] - The new document from Firestore
-  void afterSyncNotifyUpdate(T? doc);
+  Future<void> afterSyncNotifyUpdate(T? doc);
 
   /// Handles incoming data updates from Firestore with post-sync notification.
   ///
@@ -38,8 +38,8 @@ abstract class AfSyncTurboDocumentService<T extends TurboWriteableId<String>,
   /// - [value] - The new document value from Firestore
   /// - [user] - The current Firebase user
   @override
-  void Function(T? value, User? user) get onData {
-    return (value, user) {
+  Future<void> Function(T? value, User? user) get onData {
+    return (value, user) async {
       if (user != null) {
         log.debug('Updating doc for user ${user.uid}');
         if (value != null) {
@@ -48,16 +48,16 @@ abstract class AfSyncTurboDocumentService<T extends TurboWriteableId<String>,
             doc: (current, _) => value,
           );
           _isReady.completeIfNotComplete();
-          afterSyncNotifyUpdate(pDoc);
+          await afterSyncNotifyUpdate(pDoc);
         } else {
           _doc.update(null);
-          afterSyncNotifyUpdate(null);
+          await afterSyncNotifyUpdate(value);
         }
         log.debug('Updated doc');
       } else {
         log.debug('User is null, clearing doc');
         _doc.update(null);
-        afterSyncNotifyUpdate(null);
+        await afterSyncNotifyUpdate(null);
       }
     };
   }

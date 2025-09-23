@@ -20,7 +20,7 @@ abstract class BeAfSyncTurboDocumentService<T extends TurboWriteableId<String>,
   ///
   /// Parameters:
   /// - [doc] - The new document from Firestore
-  void beforeSyncNotifyUpdate(T? doc);
+  Future<void> beforeSyncNotifyUpdate(T? doc);
 
   /// Called after the local state has been updated with new data.
   ///
@@ -29,7 +29,7 @@ abstract class BeAfSyncTurboDocumentService<T extends TurboWriteableId<String>,
   ///
   /// Parameters:
   /// - [doc] - The new document from Firestore
-  void afterSyncNotifyUpdate(T? doc);
+  Future<void> afterSyncNotifyUpdate(T? doc);
 
   /// Handles incoming data updates from Firestore with pre and post-sync notifications.
   ///
@@ -49,28 +49,28 @@ abstract class BeAfSyncTurboDocumentService<T extends TurboWriteableId<String>,
   /// - [user] - The current Firebase user
   @override
   void Function(T? value, User? user) get onData {
-    return (value, user) {
+    return (value, user) async {
       if (user != null) {
         log.debug('Updating doc for user ${user.uid}');
         if (value != null) {
-          beforeSyncNotifyUpdate(value);
-          final pDoc = upsertLocalDoc(
+          await beforeSyncNotifyUpdate(value);
+          upsertLocalDoc(
             id: value.id,
             doc: (current, _) => value,
           );
           _isReady.completeIfNotComplete();
-          afterSyncNotifyUpdate(pDoc);
+          await afterSyncNotifyUpdate(value);
         } else {
-          beforeSyncNotifyUpdate(null);
+          await beforeSyncNotifyUpdate(null);
           _doc.update(null);
-          afterSyncNotifyUpdate(null);
+          await afterSyncNotifyUpdate(null);
         }
         log.debug('Updated doc');
       } else {
         log.debug('User is null, clearing doc');
-        beforeSyncNotifyUpdate(null);
+        await beforeSyncNotifyUpdate(null);
         _doc.update(null);
-        afterSyncNotifyUpdate(null);
+        await afterSyncNotifyUpdate(null);
       }
     };
   }

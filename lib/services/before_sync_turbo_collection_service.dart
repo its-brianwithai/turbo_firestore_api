@@ -20,7 +20,7 @@ abstract class BeSyncTurboCollectionService<T extends TurboWriteableId<String>,
   ///
   /// Parameters:
   /// - [docs] - The new documents from Firestore
-  void beforeSyncNotifyUpdate(List<T> docs);
+  Future<void> beforeSyncNotifyUpdate(List<T> docs);
 
   /// Handles incoming data updates from Firestore with pre-sync notification.
   ///
@@ -39,11 +39,11 @@ abstract class BeSyncTurboCollectionService<T extends TurboWriteableId<String>,
   /// - [user] - The current Firebase user
   @override
   void Function(List<T>? value, User? user) get onData {
-    return (value, user) {
+    return (value, user) async {
       final docs = value ?? [];
       if (user != null) {
         log.debug('Updating docs for user ${user.uid}');
-        beforeSyncNotifyUpdate(docs);
+        await beforeSyncNotifyUpdate(docs);
         docsPerIdInformer.update(
           docs.toIdMap((element) => element.id),
         );
@@ -51,7 +51,7 @@ abstract class BeSyncTurboCollectionService<T extends TurboWriteableId<String>,
         log.debug('Updated ${docs.length} docs');
       } else {
         log.debug('User is null, clearing docs');
-        beforeSyncNotifyUpdate([]);
+        await beforeSyncNotifyUpdate([]);
         docsPerIdInformer.update(
           {},
         );

@@ -21,7 +21,7 @@ abstract class BeAfSyncTurboCollectionService<
   ///
   /// Parameters:
   /// - [docs] - The new documents from Firestore
-  void beforeSyncNotifyUpdate(List<T> docs);
+  Future<void> beforeSyncNotifyUpdate(List<T> docs);
 
   /// Called after the local state has been updated with new data.
   ///
@@ -30,7 +30,7 @@ abstract class BeAfSyncTurboCollectionService<
   ///
   /// Parameters:
   /// - [docs] - The new documents from Firestore
-  void afterSyncNotifyUpdate(List<T> docs);
+  Future<void> afterSyncNotifyUpdate(List<T> docs);
 
   /// Handles incoming data updates from Firestore with pre and post-sync notifications.
   ///
@@ -50,24 +50,24 @@ abstract class BeAfSyncTurboCollectionService<
   /// - [user] - The current Firebase user
   @override
   void Function(List<T>? value, User? user) get onData {
-    return (value, user) {
+    return (value, user) async {
       final docs = value ?? [];
       if (user != null) {
         log.debug('Updating docs for user ${user.uid}');
-        beforeSyncNotifyUpdate(docs);
+        await beforeSyncNotifyUpdate(docs);
         docsPerIdInformer.update(
           docs.toIdMap((element) => element.id),
         );
         _isReady.completeIfNotComplete();
-        afterSyncNotifyUpdate(docs);
+        await afterSyncNotifyUpdate(docs);
         log.debug('Updated ${docs.length} docs');
       } else {
         log.debug('User is null, clearing docs');
-        beforeSyncNotifyUpdate([]);
+        await beforeSyncNotifyUpdate([]);
         docsPerIdInformer.update(
           {},
         );
-        afterSyncNotifyUpdate([]);
+        await afterSyncNotifyUpdate([]);
       }
     };
   }

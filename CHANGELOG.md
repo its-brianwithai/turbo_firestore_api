@@ -1,3 +1,18 @@
+## [Unreleased]
+
+## 🚀 Version 0.8.0 (September 2025)
+
+### 💔 Breaking:
+* **Changed sync notification methods to be asynchronous** - `beforeSyncNotifyUpdate` and `afterSyncNotifyUpdate` methods in sync services now return `Future<void>` instead of `void`. This affects:
+  - `BeAfSyncTurboDocumentService`
+  - `BeSyncTurboDocumentService`
+  - `BeAfSyncTurboCollectionService`
+  - `BeSyncTurboCollectionService`
+
+### 🛠️ Improvements:
+* **Enhanced sync service flexibility** - Sync notification methods can now perform asynchronous operations during data synchronization
+* **Better async/await support** - Services can now properly handle asynchronous operations during document and collection updates
+
 ## 🚀 Version 0.7.3 (May 2025)
 
 * **🛠️ Improvement:** Clean release with all dependencies updated and proper git state

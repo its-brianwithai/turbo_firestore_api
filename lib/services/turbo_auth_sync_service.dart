@@ -54,7 +54,7 @@ abstract class TurboAuthSyncService<StreamValue> with TurboExceptionHandler {
         (user) async {
           final userId = user?.uid;
           if (userId != null) {
-            this.cachedUserId = userId;
+            cachedUserId = userId;
             await onAuth?.call(user!);
             _subscription ??= (await stream(user!)).listen(
               (value) {
